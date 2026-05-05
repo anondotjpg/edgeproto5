@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePrivy } from "@privy-io/react-auth";
 import { PLAN_CONFIG, type PlanKey } from "@/lib/plans";
+import { FiArrowUpRight } from "react-icons/fi";
 
 type ExistingAccount = {
   id: string;
@@ -141,8 +142,9 @@ export default function OwnedAccountsSection() {
                 </div>
               </div>
 
-              <div className="mt-4 text-[13px] font-medium text-zinc-300 group-hover:text-zinc-100">
-                Open account →
+              <div className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-300 group-hover:text-zinc-100">
+                <span>Open account</span>
+                <FiArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </div>
             </Link>
           );

@@ -30,32 +30,56 @@ export async function GET() {
       .eq("privy_user_id", privyUserId)
       .maybeSingle();
 
-    if (userError) {
-      throw userError;
-    }
+    if (userError) throw userError;
 
     if (!dbUser) {
-      return NextResponse.json({ accounts: [] });
+      return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
     const { data: accounts, error: accountsError } = await supabaseAdmin
       .from("challenge_accounts")
-      .select("id, plan_key, plan_size, one_time_fee, status, created_at")
+      .select(
+        `
+        id,
+        plan_key,
+        plan_size,
+        one_time_fee,
+        status,
+        starting_balance,
+        current_balance,
+        reserved_risk,
+        realized_pnl,
+
+        profit_target_percent,
+        daily_drawdown_percent,
+        total_drawdown_percent,
+
+        max_risk_amount,
+        daily_loss_limit_amount,
+        total_loss_limit_amount,
+
+        passed_at,
+        failed_at,
+        failure_reason,
+        created_at
+      `
+      )
       .eq("user_id", dbUser.id)
       .order("created_at", { ascending: false });
 
-    if (accountsError) {
-      throw accountsError;
-    }
+    if (accountsError) throw accountsError;
 
     return NextResponse.json({
       accounts: accounts ?? [],
     });
   } catch (error) {
-    console.error("Failed to load owned accounts:", error);
+    console.error("Load accounts error:", error);
 
     return NextResponse.json(
-      { error: "Unable to load accounts." },
+      {
+        error:
+          error instanceof Error ? error.message : "Unable to load accounts.",
+      },
       { status: 500 }
     );
   }

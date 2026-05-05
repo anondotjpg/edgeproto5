@@ -39,6 +39,34 @@ function cleanInteger(value: unknown) {
   return parsed;
 }
 
+function cleanRpcError(message: string) {
+  if (message.includes("Max risk per bet exceeded")) {
+    return message;
+  }
+
+  if (message.includes("Insufficient balance")) {
+    return "Insufficient available balance.";
+  }
+
+  if (message.includes("Account not active")) {
+    return "This account is not active.";
+  }
+
+  if (message.includes("Account not found")) {
+    return "Account not found.";
+  }
+
+  if (message.includes("Invalid stake")) {
+    return "Invalid stake.";
+  }
+
+  if (message.includes("Invalid odds")) {
+    return "Invalid odds.";
+  }
+
+  return message || "Unable to place bet.";
+}
+
 export async function POST(req: Request) {
   try {
     const headerStore = await headers();
@@ -101,32 +129,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid stake." }, { status: 400 });
     }
 
-    /**
-     * For Polymarket-backed bets, these two fields are what make
-     * automated settlement reliable:
-     *
-     * polymarketConditionId = find the market
-     * polymarketTokenId = identify the user's selected outcome
-     *
-     * I am not hard-requiring them here because you may still want
-     * non-Polymarket/manual/dev bets. The Portfolio button will show
-     * "Missing Polymarket Data" if these are absent.
-     */
-    const hasSomePolymarketData =
-      Boolean(polymarketEventId) ||
-      Boolean(polymarketEventSlug) ||
-      Boolean(polymarketMarketId) ||
-      Boolean(polymarketConditionId) ||
-      Boolean(polymarketMarketSlug) ||
-      Boolean(polymarketOutcome) ||
-      polymarketOutcomeIndex !== null ||
-      Boolean(polymarketTokenId);
-
-    if (hasSomePolymarketData && (!polymarketConditionId || !polymarketTokenId)) {
+    if (!polymarketConditionId || !polymarketTokenId) {
       return NextResponse.json(
         {
           error:
-            "Missing Polymarket settlement data. Need condition ID and token ID.",
+            "Missing Polymarket settlement data. Refresh the market and try again.",
         },
         { status: 400 }
       );
@@ -180,7 +187,13 @@ export async function POST(req: Request) {
       );
 
       if (rpcError) {
-        throw rpcError;
+        return NextResponse.json(
+          {
+            error: cleanRpcError(rpcError.message),
+            details: rpcError.message,
+          },
+          { status: 400 }
+        );
       }
 
       placedBetIds.push(betId as string);

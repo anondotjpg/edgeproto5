@@ -3,15 +3,14 @@ import { headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { privyServer } from "@/lib/privy-server";
 
-type SettleResult = "won" | "lost" | "void" | "cashed_out";
+type SettleResult = "won" | "lost" | "void";
 
 type SettleBetBody = {
   betId?: string;
   result?: SettleResult;
-  cashoutAmount?: number | null;
 };
 
-const VALID_RESULTS: SettleResult[] = ["won", "lost", "void", "cashed_out"];
+const VALID_RESULTS: SettleResult[] = ["won", "lost", "void"];
 
 export async function POST(req: Request) {
   try {
@@ -44,19 +43,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid result." }, { status: 400 });
     }
 
-    if (body.result === "cashed_out") {
-      if (
-        typeof body.cashoutAmount !== "number" ||
-        Number.isNaN(body.cashoutAmount) ||
-        body.cashoutAmount < 0
-      ) {
-        return NextResponse.json(
-          { error: "Invalid cashout amount." },
-          { status: 400 }
-        );
-      }
-    }
-
     const { data: dbUser, error: userError } = await supabaseAdmin
       .from("users")
       .select("id")
@@ -75,8 +61,7 @@ export async function POST(req: Request) {
         p_user_id: dbUser.id,
         p_bet_id: body.betId,
         p_result: body.result,
-        p_cashout_amount:
-          body.result === "cashed_out" ? body.cashoutAmount : null,
+        p_cashout_amount: null,
       }
     );
 

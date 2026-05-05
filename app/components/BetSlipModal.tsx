@@ -10,6 +10,23 @@ type OwnedAccount = {
   one_time_fee: number;
   status: string;
   created_at: string;
+
+  starting_balance: number;
+  current_balance: number;
+  reserved_risk: number;
+  realized_pnl: number;
+
+  profit_target_percent: number;
+  daily_drawdown_percent: number;
+  total_drawdown_percent: number;
+
+  max_risk_amount: number | null;
+  daily_loss_limit_amount: number | null;
+  total_loss_limit_amount: number | null;
+
+  passed_at: string | null;
+  failed_at: string | null;
+  failure_reason: string | null;
 };
 
 type BetSlipModalProps = {
@@ -42,8 +59,49 @@ function parseOdds(value: string) {
   return Number(value.replace("+", ""));
 }
 
+function formatMoney(value: number | null | undefined) {
+  const safeValue = Number(value ?? 0);
+
+  return `$${safeValue.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
 function getPlanLabel(account: OwnedAccount) {
   return `$${Number(account.plan_size).toLocaleString()}`;
+}
+
+function getMaxRiskAmount(account: OwnedAccount) {
+  return Number(
+    account.max_risk_amount ??
+      Number(account.starting_balance ?? account.plan_size ?? 0) * 0.05
+  );
+}
+
+function getDailyLossLimit(account: OwnedAccount) {
+  return Number(
+    account.daily_loss_limit_amount ??
+      Number(account.current_balance ?? account.starting_balance ?? 0) *
+        (Number(account.daily_drawdown_percent ?? 10) / 100)
+  );
+}
+
+function getTotalLossFloor(account: OwnedAccount) {
+  const start = Number(account.starting_balance ?? account.plan_size ?? 0);
+  const totalLossLimit = Number(
+    account.total_loss_limit_amount ??
+      start * (Number(account.total_drawdown_percent ?? 20) / 100)
+  );
+
+  return start - totalLossLimit;
+}
+
+function getProfitTargetAmount(account: OwnedAccount) {
+  return (
+    Number(account.starting_balance ?? account.plan_size ?? 0) *
+    (1 + Number(account.profit_target_percent ?? 30) / 100)
+  );
 }
 
 export default function BetSlipModal({
@@ -75,10 +133,13 @@ export default function BetSlipModal({
   const [error, setError] = useState<string | null>(null);
 
   const numericOdds = parseOdds(odds);
+  const stake = Number(amount);
+
+  const selectedAccounts = useMemo(() => {
+    return accounts.filter((account) => selectedAccountIds.includes(account.id));
+  }, [accounts, selectedAccountIds]);
 
   const possiblePayout = useMemo(() => {
-    const stake = Number(amount);
-
     if (!stake || Number.isNaN(stake)) return "—";
     if (!numericOdds || Number.isNaN(numericOdds)) return "—";
 
@@ -87,8 +148,37 @@ export default function BetSlipModal({
         ? stake * (numericOdds / 100)
         : stake * (100 / Math.abs(numericOdds));
 
-    return `$${(stake + profit).toFixed(2)}`;
-  }, [amount, numericOdds]);
+    return formatMoney(stake + profit);
+  }, [stake, numericOdds]);
+
+  const ruleWarning = useMemo(() => {
+    if (!selectedAccounts.length) return null;
+    if (!stake || Number.isNaN(stake)) return null;
+
+    for (const account of selectedAccounts) {
+      const active = ["active", "active_dev"].includes(account.status);
+
+      if (!active) {
+        return `${getPlanLabel(account)} account is not active.`;
+      }
+
+      const maxRiskAmount = getMaxRiskAmount(account);
+
+      if (stake > maxRiskAmount) {
+        return `${getPlanLabel(account)} account max risk per bet is ${formatMoney(
+          maxRiskAmount
+        )}.`;
+      }
+
+      if (stake > Number(account.current_balance ?? 0)) {
+        return `${getPlanLabel(account)} account only has ${formatMoney(
+          account.current_balance
+        )} available.`;
+      }
+    }
+
+    return null;
+  }, [selectedAccounts, stake]);
 
   useEffect(() => {
     let cancelled = false;
@@ -120,12 +210,17 @@ export default function BetSlipModal({
           const loadedAccounts = data.accounts ?? [];
           setAccounts(loadedAccounts);
 
-          if (loadedAccounts.length === 1) {
-            setSelectedAccountIds([loadedAccounts[0].id]);
+          const activeAccounts = loadedAccounts.filter((account: OwnedAccount) =>
+            ["active", "active_dev"].includes(account.status)
+          );
+
+          if (activeAccounts.length === 1) {
+            setSelectedAccountIds([activeAccounts[0].id]);
           }
         }
       } catch (err) {
         console.error(err);
+
         if (!cancelled) {
           setError(
             err instanceof Error ? err.message : "Failed to load accounts."
@@ -165,14 +260,16 @@ export default function BetSlipModal({
       setIsPlacing(true);
       setError(null);
 
-      const stake = Number(amount);
-
       if (!selectedAccountIds.length) {
         throw new Error("Select at least one account.");
       }
 
       if (!stake || stake <= 0) {
         throw new Error("Enter a valid bet amount.");
+      }
+
+      if (ruleWarning) {
+        throw new Error(ruleWarning);
       }
 
       if (!polymarketConditionId || !polymarketTokenId) {
@@ -299,7 +396,7 @@ export default function BetSlipModal({
                 Select account
               </div>
 
-              <div className="mt-2 max-h-40 space-y-2 overflow-y-auto pr-1">
+              <div className="mt-2 max-h-56 space-y-2 overflow-y-auto pr-1">
                 {!authenticated ? (
                   <button
                     type="button"
@@ -315,36 +412,93 @@ export default function BetSlipModal({
                 ) : accounts.length ? (
                   accounts.map((account) => {
                     const selected = selectedAccountIds.includes(account.id);
+                    const active = ["active", "active_dev"].includes(
+                      account.status
+                    );
+
+                    const maxRiskAmount = getMaxRiskAmount(account);
+                    const dailyLossLimit = getDailyLossLimit(account);
+                    const totalLossFloor = getTotalLossFloor(account);
+                    const target = getProfitTargetAmount(account);
 
                     return (
                       <button
                         key={account.id}
                         type="button"
-                        onClick={() => toggleAccount(account.id)}
+                        onClick={() => {
+                          if (active) toggleAccount(account.id);
+                        }}
+                        disabled={!active}
                         className={[
-                          "flex w-full items-center justify-between gap-3 rounded-2xl border p-4 text-left transition-colors",
+                          "w-full rounded-2xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                           selected
                             ? "border-zinc-500 bg-zinc-900"
                             : "border-zinc-800 bg-black/30 hover:border-zinc-700",
                         ].join(" ")}
                       >
-                        <div>
-                          <div className="text-sm font-semibold text-zinc-100">
-                            {getPlanLabel(account)} Challenge
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold text-zinc-100">
+                              {getPlanLabel(account)} Challenge
+                            </div>
+
+                            <div className="mt-1 text-xs text-zinc-500">
+                              {account.status}
+                            </div>
                           </div>
-                          <div className="mt-1 text-xs text-zinc-500">
-                            {account.status}
+
+                          <div
+                            className={[
+                              "mt-0.5 h-4 w-4 rounded-full border",
+                              selected
+                                ? "border-zinc-100 bg-zinc-100"
+                                : "border-zinc-700",
+                            ].join(" ")}
+                          />
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                          <div className="text-zinc-500">
+                            Available{" "}
+                            <span className="font-semibold text-zinc-300">
+                              {formatMoney(account.current_balance)}
+                            </span>
+                          </div>
+
+                          <div className="text-zinc-500">
+                            Max Bet{" "}
+                            <span className="font-semibold text-zinc-300">
+                              {formatMoney(maxRiskAmount)}
+                            </span>
+                          </div>
+
+                          <div className="text-zinc-500">
+                            Daily Loss{" "}
+                            <span className="font-semibold text-zinc-300">
+                              {formatMoney(dailyLossLimit)}
+                            </span>
+                          </div>
+
+                          <div className="text-zinc-500">
+                            Target{" "}
+                            <span className="font-semibold text-zinc-300">
+                              {formatMoney(target)}
+                            </span>
+                          </div>
+
+                          <div className="col-span-2 text-zinc-500">
+                            Total Loss Floor{" "}
+                            <span className="font-semibold text-zinc-300">
+                              {formatMoney(totalLossFloor)}
+                            </span>
                           </div>
                         </div>
 
-                        <div
-                          className={[
-                            "h-4 w-4 rounded-full border",
-                            selected
-                              ? "border-zinc-100 bg-zinc-100"
-                              : "border-zinc-700",
-                          ].join(" ")}
-                        />
+                        {account.failure_reason ? (
+                          <div className="mt-2 text-xs text-red-300">
+                            {account.failure_reason}
+                          </div>
+                        ) : null}
                       </button>
                     );
                   })
@@ -384,6 +538,12 @@ export default function BetSlipModal({
               </div>
             </div>
 
+            {ruleWarning ? (
+              <div className="mt-4 rounded-2xl border border-yellow-950 bg-yellow-950/20 p-3 text-sm text-yellow-200">
+                {ruleWarning}
+              </div>
+            ) : null}
+
             {error ? (
               <div className="mt-4 rounded-2xl border border-red-950 bg-red-950/20 p-3 text-sm text-red-300">
                 {error}
@@ -397,7 +557,8 @@ export default function BetSlipModal({
                 isPlacing ||
                 !amount ||
                 Number(amount) <= 0 ||
-                !selectedAccountIds.length
+                !selectedAccountIds.length ||
+                Boolean(ruleWarning)
               }
               className="mt-5 h-12 w-full rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
             >
