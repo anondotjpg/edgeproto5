@@ -104,10 +104,10 @@ const PLAN_DETAILS: PlanDetail[] = [
   { label: "Profit Target", value: "30%" },
   { label: "Daily Drawdown", value: "10%" },
   { label: "Total Drawdown", value: "20%" },
-  { label: "Min Trading Days", value: "7 days" },
-  { label: "Max Inactivity", value: "14 days" },
+  /*{ label: "Min Trading Days", value: "7 days" },*/
+  /*{ label: "Max Inactivity", value: "14 days" },*/
   { label: "Max Risk/Trade", value: "5%" },
-  { label: "Your Rewards", value: "70%", accent: true },
+  /*{ label: "Your Rewards", value: "70%", accent: true },*/
 ];
 
 function DetailRow({
