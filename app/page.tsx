@@ -194,7 +194,7 @@ function GameCard({ game }: { game: Game }) {
   const eventHref = `/event/${game.slug}`;
 
   return (
-    <article className="relative rounded-[24px] bg-zinc-900/60 p-4 pb-12 backdrop-blur-sm">
+    <article className="relative rounded-[24px] bg-zinc-900/70 p-4 pb-12 backdrop-blur-sm">
       <div className="mb-2 grid grid-cols-[minmax(0,1fr)_96px] gap-0">
         <div className="pl-1 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
           Teams
