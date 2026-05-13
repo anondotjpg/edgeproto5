@@ -15,6 +15,16 @@ type ExistingAccount = {
   created_at: string;
 };
 
+function getStatusClassName(status: string) {
+  const normalizedStatus = status.toLowerCase();
+
+  if (normalizedStatus === "failed") {
+    return "bg-red-950/60 text-red-400";
+  }
+
+  return "bg-zinc-900 text-zinc-500";
+}
+
 function AccountSkeletonCard() {
   return (
     <div className="flex min-h-[58px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
@@ -62,10 +72,8 @@ export default function OwnedAccountsSection() {
       if (!ready) return;
 
       if (!authenticated) {
-        if (!cancelled) {
-          setAccounts([]);
-          setIsLoading(false);
-        }
+        setAccounts([]);
+        setIsLoading(false);
         return;
       }
 
@@ -118,18 +126,13 @@ export default function OwnedAccountsSection() {
 
   return (
     <div className="mb-6 min-h-[108px]">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex items-center">
         <h2 className="text-[13px] font-medium uppercase tracking-[0.18em] text-zinc-500">
-          Active Accounts
+          Active Accounts{" "}
+          <span className="tracking-normal text-zinc-600">
+            ({showSkeleton ? "..." : showAccounts ? accounts.length : 0})
+          </span>
         </h2>
-
-        <span className="text-[12px] text-zinc-600">
-          {showSkeleton
-            ? "Loading"
-            : showAccounts
-              ? `${accounts.length} active`
-              : "0 active"}
-        </span>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -137,7 +140,10 @@ export default function OwnedAccountsSection() {
           <>
             <AccountSkeletonCard />
             <AccountSkeletonCard />
-            <AccountSkeletonCard />
+
+            <div className="hidden xl:block">
+              <AccountSkeletonCard />
+            </div>
           </>
         )}
 
@@ -167,7 +173,11 @@ export default function OwnedAccountsSection() {
                       {sizeLabel}
                     </div>
 
-                    <div className="rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                    <div
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] ${getStatusClassName(
+                        account.status
+                      )}`}
+                    >
                       {account.status}
                     </div>
                   </div>
