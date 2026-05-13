@@ -307,7 +307,7 @@ export default function AccountsPage() {
               <h1 className="text-[30px] font-semibold tracking-tight text-zinc-100 sm:text-[38px] italic">
                 Find Your Edge
               </h1>
-              <p className="text-[15px] text-zinc-500 sm:text-[16px]">
+              <p className="text-[15px] text-zinc-500 sm:text-[16px] hidden md:block">
                 Place your bets.
               </p>
             </div>
