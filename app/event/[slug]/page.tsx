@@ -98,13 +98,16 @@ async function getEvent(slug: string): Promise<EventResponse> {
 }
 
 function formatGameTime(date: string) {
-  return new Date(date).toLocaleString([], {
+  const formatted = new Date(date).toLocaleString("en-US", {
+    timeZone: "America/New_York",
     weekday: "short",
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
   });
+
+  return `${formatted} EST`;
 }
 
 function formatPrice(price?: number) {
