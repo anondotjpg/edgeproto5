@@ -15,6 +15,41 @@ type ExistingAccount = {
   created_at: string;
 };
 
+function AccountSkeletonCard() {
+  return (
+    <div className="flex min-h-[58px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-20 animate-pulse rounded bg-zinc-800" />
+          <div className="h-5 w-16 animate-pulse rounded-full bg-zinc-900" />
+        </div>
+
+        <div className="mt-2 h-3 w-14 animate-pulse rounded bg-zinc-900" />
+      </div>
+
+      <div className="ml-3 h-7 w-7 shrink-0 animate-pulse rounded-full bg-zinc-900" />
+    </div>
+  );
+}
+
+function EmptyAccountCard({ authenticated }: { authenticated: boolean }) {
+  return (
+    <div className="flex min-h-[58px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900">
+      <div className="min-w-0">
+        <div className="text-[14px] font-medium text-zinc-300">
+          No active accounts
+        </div>
+
+        <div className="mt-1 text-[12px] text-zinc-600">
+          {authenticated
+            ? "Open an account below to get started."
+            : "Sign in to view your accounts."}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OwnedAccountsSection() {
   const { ready, authenticated, getAccessToken } = usePrivy();
   const [accounts, setAccounts] = useState<ExistingAccount[]>([]);
@@ -27,8 +62,10 @@ export default function OwnedAccountsSection() {
       if (!ready) return;
 
       if (!authenticated) {
-        setAccounts([]);
-        setIsLoading(false);
+        if (!cancelled) {
+          setAccounts([]);
+          setIsLoading(false);
+        }
         return;
       }
 
@@ -57,6 +94,7 @@ export default function OwnedAccountsSection() {
         }
       } catch (error) {
         console.error(error);
+
         if (!cancelled) {
           setAccounts([]);
         }
@@ -74,81 +112,77 @@ export default function OwnedAccountsSection() {
     };
   }, [ready, authenticated, getAccessToken]);
 
-  if (!ready || isLoading) {
-    return null;
-  }
-
-  if (!authenticated || !accounts.length) {
-    return null;
-  }
+  const showSkeleton = !ready || isLoading;
+  const showEmpty = !showSkeleton && (!authenticated || accounts.length === 0);
+  const showAccounts = !showSkeleton && authenticated && accounts.length > 0;
 
   return (
-    <div className="mb-10">
-      <div className="mb-6 text-center">
-        <h2 className="text-[24px] font-semibold tracking-tight text-zinc-100 sm:text-[30px]">
+    <div className="mb-6 min-h-[108px]">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-[13px] font-medium uppercase tracking-[0.18em] text-zinc-500">
           Active Accounts
         </h2>
-        <p className="mt-1 text-[14px] text-zinc-500 sm:text-[15px]">
-          Open an account below or jump into an existing one.
-        </p>
+
+        <span className="text-[12px] text-zinc-600">
+          {showSkeleton
+            ? "Loading"
+            : showAccounts
+              ? `${accounts.length} active`
+              : "0 active"}
+        </span>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {accounts.map((account) => {
-          const plan = PLAN_CONFIG[account.plan_key as PlanKey];
-          const sizeLabel =
-            plan?.sizeLabel ?? `$${Number(account.plan_size).toLocaleString()}`;
-          const createdDate = new Date(account.created_at).toLocaleDateString();
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        {showSkeleton && (
+          <>
+            <AccountSkeletonCard />
+            <AccountSkeletonCard />
+            <AccountSkeletonCard />
+          </>
+        )}
 
-          return (
-            <Link
-              key={account.id}
-              href={`/accounts/${account.id}`}
-              className="group rounded-[24px] border border-zinc-800 bg-zinc-950 px-5 py-4 transition-colors hover:border-zinc-700"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                  {account.status}
-                </div>
-                <div className="text-[11px] text-zinc-600">{createdDate}</div>
-              </div>
+        {showEmpty && <EmptyAccountCard authenticated={authenticated} />}
 
-              <div className="mt-3">
-                <div className="text-[28px] font-semibold leading-none tracking-tight text-zinc-100">
-                  {sizeLabel}
-                </div>
-                <div className="mt-1 text-[14px] text-zinc-500">
-                  Challenge Account
-                </div>
-              </div>
+        {showAccounts &&
+          accounts.map((account) => {
+            const plan = PLAN_CONFIG[account.plan_key as PlanKey];
 
-              <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-800 pt-4">
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">
-                    Fee
+            const sizeLabel =
+              plan?.sizeLabel ??
+              `$${Number(account.plan_size).toLocaleString()}`;
+
+            const feeLabel = `$${Number(
+              account.one_time_fee
+            ).toLocaleString()}`;
+
+            return (
+              <Link
+                key={account.id}
+                href={`/accounts/${account.id}`}
+                className="group flex min-h-[58px] items-center justify-between rounded-[14px] bg-zinc-950 px-4 py-3 ring-1 ring-zinc-900 transition-colors hover:bg-zinc-900/80 hover:ring-zinc-800"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="text-[17px] font-semibold leading-none tracking-tight text-zinc-100">
+                      {sizeLabel}
+                    </div>
+
+                    <div className="rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                      {account.status}
+                    </div>
                   </div>
-                  <div className="mt-1 text-[15px] font-semibold text-zinc-200">
-                    ${account.one_time_fee}
-                  </div>
-                </div>
 
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">
-                    Route
-                  </div>
-                  <div className="mt-1 truncate text-[13px] text-zinc-300">
-                    /accounts/{account.id}
+                  <div className="mt-1 text-[12px] text-zinc-500">
+                    Fee {feeLabel}
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-300 group-hover:text-zinc-100">
-                <span>Open account</span>
-                <FiArrowUpRight className="h-3.5 w-3.5" />
-              </div>
-            </Link>
-          );
-        })}
+                <div className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-zinc-400 transition-colors group-hover:bg-zinc-800 group-hover:text-zinc-100">
+                  <FiArrowUpRight className="h-3.5 w-3.5" />
+                </div>
+              </Link>
+            );
+          })}
       </div>
     </div>
   );
