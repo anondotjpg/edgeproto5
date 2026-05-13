@@ -404,7 +404,7 @@ export default function PortfolioClient() {
           ) : null}
 
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-[24px] border border-zinc-800 bg-zinc-950 p-5">
+            <div className="">
               <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
                 Active Positions
               </div>
@@ -413,7 +413,7 @@ export default function PortfolioClient() {
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-zinc-800 bg-zinc-950 p-5">
+            <div className="">
               <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
                 Past Positions
               </div>
@@ -422,7 +422,7 @@ export default function PortfolioClient() {
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-zinc-800 bg-zinc-950 p-5">
+            <div className="">
               <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
                 Active Risk
               </div>
@@ -431,7 +431,7 @@ export default function PortfolioClient() {
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-zinc-800 bg-zinc-950 p-5">
+            <div className="">
               <div className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">
                 Realized P/L
               </div>
@@ -448,7 +448,7 @@ export default function PortfolioClient() {
               </h2>
 
               <div className="text-sm text-zinc-500">
-                Possible payout: {formatMoney(totals.possiblePayout)}
+                pot. payout: {formatMoney(totals.possiblePayout)}
               </div>
             </div>
 
