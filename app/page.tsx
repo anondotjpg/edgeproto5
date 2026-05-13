@@ -305,7 +305,7 @@ export default async function Home({
             </div>
           </header>
 
-          <div className="mt-4">
+          <div className="mt-8 sm:mt-4">
             <section className="space-y-4">
               <div className="grid grid-cols-[112px_minmax(0,1fr)_112px] items-end gap-3 bg-zinc-950">
                 <LastUpdatedAgo updatedAt={data.updatedAt} />
