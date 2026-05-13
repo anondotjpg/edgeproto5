@@ -1,4 +1,3 @@
-// app/manifest.ts
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
@@ -16,6 +15,7 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/icon.png",
         sizes: "512x512",
         type: "image/png",
+        purpose: "any",
       },
       {
         src: "/apple-icon.png",

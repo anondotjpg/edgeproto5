@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   description: "Fund your bets.",
   manifest: "/manifest.webmanifest",
   icons: {
-    apple: "/apple-icon.png",
     icon: "/icon.png",
+    apple: "/apple-icon.png",
   },
   appleWebApp: {
     capable: true,
@@ -32,6 +32,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#09090b",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -44,6 +45,22 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full bg-[#09090b] antialiased`}
     >
+      <head>
+        <meta name="theme-color" content="#09090b" />
+        <meta name="color-scheme" content="dark" />
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Edge" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
+
+        <link rel="apple-touch-startup-image" href="/splash.png" />
+      </head>
+
       <body className="relative min-h-screen bg-[#09090b] text-white">
         <Providers>
           <style>{`
