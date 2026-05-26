@@ -558,7 +558,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
     <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
       <div className="mx-auto mt-7 w-full max-w-6xl">
         {account.failure_reason ? (
-          <div className="mb-4 rounded-[22px] bg-red-900/20 p-4 text-[14px] leading-6 text-red-400 ring-1 ring-red-900/50">
+          <div className="mb-2 rounded-[22px] bg-red-900/20 px-3 py-1.5 text-[14px] leading-6 text-red-400 ring-1 ring-red-900/50 whitespace-nowrap w-min">
             {account.failure_reason}
           </div>
         ) : null}

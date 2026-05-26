@@ -237,6 +237,7 @@ export async function POST(req: Request) {
         p_bet_id: bet.id,
         p_result: result,
         p_cashout_amount: null,
+        p_skip_rule_eval: false,
       }
     );
 
