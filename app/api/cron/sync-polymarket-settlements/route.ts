@@ -5,6 +5,8 @@ import {
   getPolymarketResolutionByConditionId,
 } from "@/lib/polymarket";
 
+export const dynamic = "force-dynamic";
+
 type OpenPolymarketBet = {
   id: string;
   user_id: string;
@@ -42,7 +44,7 @@ function isAuthorizedCronRequest(req: Request) {
   return authHeader === `Bearer ${cronSecret}`;
 }
 
-export async function POST(req: Request) {
+async function runPolymarketSettlementSync(req: Request) {
   try {
     if (!isAuthorizedCronRequest(req)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -247,4 +249,12 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(req: Request) {
+  return runPolymarketSettlementSync(req);
+}
+
+export async function POST(req: Request) {
+  return runPolymarketSettlementSync(req);
 }
