@@ -308,9 +308,9 @@ export default async function Home({
             backgroundSize: "18px 18px",
             backgroundPosition: "0 0",
             maskImage:
-              "radial-gradient(1200px circle at center, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.9) 26%, rgba(0,0,0,0.72) 44%, rgba(0,0,0,0.48) 60%, rgba(0,0,0,0.24) 70%, rgba(0,0,0,0.08) 80%, transparent 90%)",
+              "radial-gradient(1200px circle at center, black 0%, rgba(0,0,0,0.92) 28%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,0.35) 60%, transparent 70%)",
             WebkitMaskImage:
-              "radial-gradient(1200px circle at center, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.9) 26%, rgba(0,0,0,0.72) 44%, rgba(0,0,0,0.48) 60%, rgba(0,0,0,0.24) 70%, rgba(0,0,0,0.08) 80%, transparent 90%)",
+              "radial-gradient(1200px circle at center, black 0%, rgba(0,0,0,0.92) 28%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,0.35) 60%, transparent 70%)",
           }}
         >
           <div className="absolute inset-0 bg-[#09090b]/25" />
