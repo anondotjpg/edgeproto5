@@ -294,7 +294,10 @@ function RuleRoomCard({
           <span>{Math.round(usedPercent)}%</span>
         </div>
 
-        <ProgressBar value={usedPercent} tone={breached ? "danger" : "default"} />
+        <ProgressBar
+          value={usedPercent}
+          tone={breached ? "danger" : "default"}
+        />
 
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-2xl bg-black/30 p-3">
@@ -569,22 +572,12 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
         <section className="rounded-[32px] bg-zinc-950/90 p-5 sm:p-7">
           <div className="relative">
-            <div
-              className={`absolute right-0 top-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${accountStatusClassName()}`}
-            >
-              {resultLabel(accountStatus)}
-            </div>
 
             <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
               <div className="min-w-0 pr-24 sm:pr-32">
                 <h1 className="text-[34px] font-semibold leading-none tracking-tight text-zinc-100 sm:text-[48px]">
                   {pageTitle}
                 </h1>
-
-                <p className="mt-3 hidden max-w-2xl text-[15px] leading-7 text-zinc-500 md:block">
-                  Your rule equity, available balance, progress to target, room
-                  before failing, and every position tied to this account.
-                </p>
 
                 <div className="mt-7">
                   <div className="text-[13px] font-medium text-zinc-500">
@@ -620,36 +613,63 @@ export default async function AccountPage({ params }: AccountPageProps) {
                 </div>
               </div>
 
-              <div className="rounded-[26px] bg-black/30 p-5 ring-1 ring-zinc-900">
-                <div>
-                  <div className="text-[13px] font-medium text-zinc-500">
-                    Goal
+              <div className="rounded-[26px] bg-black/30 p-4 ring-1 ring-zinc-900 sm:p-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="text-[13px] font-medium text-zinc-500">
+                      Goal
+                    </div>
+
+                    <div className="mt-1 text-[30px] font-semibold leading-none tracking-tight text-zinc-100 sm:text-[34px]">
+                      {formatMoney(profitTargetBalance)}
+                    </div>
                   </div>
 
-                  <div className="mt-1 text-[24px] font-semibold tracking-tight text-zinc-100">
-                    {formatMoney(profitTargetBalance)}
-                  </div>
-
-                  <div className="mt-1 text-[12px] text-zinc-600">
-                    Progress uses rule equity
+                  <div
+                    className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${accountStatusClassName()}`}
+                  >
+                    {resultLabel(accountStatus)}
                   </div>
                 </div>
 
                 <div className="mt-5">
+                  <div className="mb-2 flex items-center justify-between text-[12px] text-zinc-500">
+                    <span>Progress</span>
+                    <span>{formatMoney(ruleEquity)}</span>
+                  </div>
+
                   <ProgressBar
                     value={targetProgress}
                     tone={isPassed ? "success" : "default"}
                   />
                 </div>
 
-                <p className="mt-4 text-[13px] leading-6 text-zinc-500">
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="rounded-2xl bg-zinc-950/70 p-3 ring-1 ring-zinc-900">
+                    <div className="text-[11px] text-zinc-600">Remaining</div>
+
+                    <div className="mt-1 text-[15px] font-semibold leading-none text-zinc-100">
+                      {isPassed || remainingToTarget <= 0
+                        ? "$0.00"
+                        : formatMoney(remainingToTarget)}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl bg-zinc-950/70 p-3 ring-1 ring-zinc-900">
+                    <div className="text-[11px] text-zinc-600">Target</div>
+
+                    <div className="mt-1 text-[15px] font-semibold leading-none text-zinc-100">
+                      {formatPercent(profitTargetPercent)}
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-4 text-[13px] leading-5 text-zinc-500">
                   {isPassed
                     ? "Target reached and account passed."
                     : remainingToTarget > 0
-                      ? `${formatMoney(
-                          remainingToTarget
-                        )} left before target. Account passes after rule equity reaches the target and no positions are open.`
-                      : "Target reached. Account passes once no positions are open."}
+                      ? `${formatMoney(remainingToTarget)} left to pass.`
+                      : "Target reached. Passes once no positions are open."}
                 </p>
               </div>
             </div>

@@ -89,22 +89,54 @@ function BetCardSkeleton() {
   );
 }
 
+function GoalSkeleton() {
+  return (
+    <div className="rounded-[26px] bg-black/30 p-4 ring-1 ring-zinc-900 sm:p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-[13px] font-medium text-zinc-500">Goal</div>
+
+          <SkeletonBlock className="mt-2 h-8 w-40 sm:h-9 sm:w-44" />
+        </div>
+
+        <SkeletonBlock className="h-7 w-16 rounded-full" />
+      </div>
+
+      <div className="mt-5">
+        <div className="mb-2 flex items-center justify-between text-[12px] text-zinc-500">
+          <span>Progress</span>
+          <SkeletonBlock className="h-3 w-20" />
+        </div>
+
+        <SkeletonBlock className="h-2 w-full rounded-full" />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="rounded-2xl bg-zinc-950/70 p-3 ring-1 ring-zinc-900">
+          <div className="text-[11px] text-zinc-600">Remaining</div>
+          <SkeletonBlock className="mt-2 h-4 w-20" />
+        </div>
+
+        <div className="rounded-2xl bg-zinc-950/70 p-3 ring-1 ring-zinc-900">
+          <div className="text-[11px] text-zinc-600">Target</div>
+          <SkeletonBlock className="mt-2 h-4 w-12" />
+        </div>
+      </div>
+
+      <SkeletonBlock className="mt-4 h-3 w-full" />
+    </div>
+  );
+}
+
 export default function LoadingAccountPage() {
   return (
     <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
       <div className="mx-auto mt-7 w-full max-w-6xl">
         <section className="rounded-[32px] bg-zinc-950/90 p-5 sm:p-7">
           <div className="relative">
-            <SkeletonBlock className="absolute right-0 top-0 h-7 w-20 rounded-full" />
-
             <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
               <div className="min-w-0 pr-24 sm:pr-32">
                 <SkeletonBlock className="h-10 w-64 max-w-full sm:h-12 sm:w-80" />
-
-                <div className="mt-3 hidden max-w-2xl space-y-2 md:block">
-                  <SkeletonBlock className="h-4 w-full max-w-xl" />
-                  <SkeletonBlock className="h-4 w-4/5 max-w-lg" />
-                </div>
 
                 <div className="mt-7">
                   <div className="text-[13px] font-medium text-zinc-500">
@@ -123,24 +155,7 @@ export default function LoadingAccountPage() {
                 </div>
               </div>
 
-              <div className="rounded-[26px] bg-black/30 p-5 ring-1 ring-zinc-900">
-                <div>
-                  <div className="text-[13px] font-medium text-zinc-500">
-                    Goal
-                  </div>
-
-                  <SkeletonBlock className="mt-2 h-7 w-32" />
-
-                  <div className="mt-2 text-[12px] text-zinc-600">
-                    Progress uses rule equity
-                  </div>
-                </div>
-
-                <SkeletonBlock className="mt-5 h-2 w-full rounded-full" />
-
-                <SkeletonBlock className="mt-4 h-3 w-full" />
-                <SkeletonBlock className="mt-2 h-3 w-4/5" />
-              </div>
+              <GoalSkeleton />
             </div>
           </div>
         </section>
