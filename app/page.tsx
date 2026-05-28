@@ -304,7 +304,7 @@ export default async function Home({
           className="pointer-events-none fixed inset-y-0 right-0 z-[1] hidden overflow-hidden md:left-[220px] md:block"
           style={{
             backgroundImage:
-              "radial-gradient(circle, rgba(161, 161, 170, 0.35) 1px, transparent 1px)",
+              "radial-gradient(circle, rgba(161, 161, 170, 0.22) 1px, transparent 1px)",
             backgroundSize: "18px 18px",
             backgroundPosition: "0 0",
             maskImage:
