@@ -299,10 +299,10 @@ export default async function Home({
         }
       `}</style>
 
-      <div className="relative min-h-screen bg-[#09090b] text-white">
-        <div className="pointer-events-none fixed inset-y-0 right-0 z-[1] hidden overflow-hidden md:left-[220px] md:block">
+      <div className="relative isolate min-h-screen bg-[#09090b] text-white">
+        <div className="pointer-events-none fixed inset-y-0 right-0 z-0 hidden overflow-hidden md:left-[220px] md:block">
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 z-0"
             style={{
               backgroundImage:
                 "radial-gradient(circle, rgba(161, 161, 170, 0.14) 1px, transparent 1px)",
@@ -312,17 +312,17 @@ export default async function Home({
           />
 
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 z-[1]"
             style={{
               background:
                 "radial-gradient(800px circle at center, rgba(9,9,11,0) 0%, rgba(9,9,11,0.18) 24%, rgba(9,9,11,0.48) 42%, rgba(9,9,11,0.82) 58%, #09090b 76%)",
             }}
           />
 
-          <div className="absolute inset-0 bg-[#09090b]/18" />
+          <div className="absolute inset-0 z-[2] bg-[#09090b]/18" />
         </div>
 
-        <div className="relative z-[2] mx-auto w-full max-w-7xl px-4 py-5 pb-24 sm:px-6 sm:py-6 md:pb-6">
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-5 pb-24 sm:px-6 sm:py-6 md:pb-6">
           <header>
             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
               <div className="min-w-0 flex-1">
