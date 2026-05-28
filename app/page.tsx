@@ -300,20 +300,26 @@ export default async function Home({
       `}</style>
 
       <div className="relative min-h-screen bg-[#09090b] text-white">
-        <div
-          className="pointer-events-none fixed inset-y-0 right-0 z-[1] hidden overflow-hidden md:left-[220px] md:block"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, rgba(161, 161, 170, 0.22) 1px, transparent 1px)",
-            backgroundSize: "18px 18px",
-            backgroundPosition: "0 0",
-            maskImage:
-              "radial-gradient(1200px circle at center, black 0%, rgba(0,0,0,0.92) 28%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,0.35) 60%, transparent 70%)",
-            WebkitMaskImage:
-              "radial-gradient(1200px circle at center, black 0%, rgba(0,0,0,0.92) 28%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,0.35) 60%, transparent 70%)",
-          }}
-        >
-          <div className="absolute inset-0 bg-[#09090b]/25" />
+        <div className="pointer-events-none fixed inset-y-0 right-0 z-[1] hidden overflow-hidden md:left-[220px] md:block">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, rgba(161, 161, 170, 0.22) 1px, transparent 1px)",
+              backgroundSize: "18px 18px",
+              backgroundPosition: "0 0",
+            }}
+          />
+
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(1200px circle at center, rgba(9,9,11,0) 0%, rgba(9,9,11,0.04) 28%, rgba(9,9,11,0.18) 48%, rgba(9,9,11,0.58) 70%, #09090b 100%)",
+            }}
+          />
+
+          <div className="absolute inset-0 bg-[#09090b]/10" />
         </div>
 
         <div className="relative z-[2] mx-auto w-full max-w-7xl px-4 py-5 pb-24 sm:px-6 sm:py-6 md:pb-6">
