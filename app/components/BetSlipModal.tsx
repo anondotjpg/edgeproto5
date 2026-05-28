@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { usePrivy } from "@privy-io/react-auth";
 
 type OwnedAccount = {
@@ -223,6 +224,9 @@ export default function BetSlipModal({
 
     return null;
   }, [selectedAccounts, stake]);
+
+  const statusMessage = ruleWarning ?? error;
+  const statusTone = ruleWarning ? "warning" : error ? "error" : null;
 
   function openBetSlip() {
     setOpen(true);
@@ -574,17 +578,29 @@ export default function BetSlipModal({
               </div>
             </label>
 
-            <div className="mt-4 min-h-[46px]">
-              {ruleWarning ? (
-                <div className="rounded-2xl border border-yellow-950 bg-yellow-950/20 p-3 text-sm text-yellow-200">
-                  {ruleWarning}
-                </div>
-              ) : error ? (
-                <div className="rounded-2xl border border-red-950 bg-red-950/20 p-3 text-sm text-red-300">
-                  {error}
-                </div>
+            <AnimatePresence initial={false}>
+              {statusMessage ? (
+                <motion.div
+                  key={statusMessage}
+                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                  animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="overflow-hidden"
+                >
+                  <div
+                    className={[
+                      "rounded-2xl border p-3 text-sm",
+                      statusTone === "warning"
+                        ? "border-yellow-950 bg-yellow-950/20 text-yellow-200"
+                        : "border-red-950 bg-red-950/20 text-red-300",
+                    ].join(" ")}
+                  >
+                    {statusMessage}
+                  </div>
+                </motion.div>
               ) : null}
-            </div>
+            </AnimatePresence>
 
             <button
               type="button"
