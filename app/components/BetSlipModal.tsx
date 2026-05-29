@@ -392,7 +392,7 @@ function BetSlipContent({
             <button
               type="button"
               onClick={login}
-              className="h-[92px] w-full rounded-2xl border border-zinc-800 bg-black/30 p-4 text-left text-sm text-zinc-300"
+              className="h-[92px] w-full cursor-pointer rounded-2xl border border-zinc-800 bg-black/30 p-4 text-left text-sm text-zinc-300"
             >
               Sign in to select an account.
             </button>
@@ -417,7 +417,7 @@ function BetSlipContent({
                     disabled={!active}
                     className={[
                       ACCOUNT_CARD_CLASS,
-                      "disabled:cursor-not-allowed disabled:opacity-50",
+                      "cursor-pointer disabled:cursor-not-allowed disabled:opacity-50",
                       selected
                         ? "border-zinc-400 bg-zinc-900"
                         : "border-zinc-800 bg-black/30 hover:border-zinc-700",
@@ -543,7 +543,7 @@ function BetSlipContent({
                       whileTap={{ scale: 0.96 }}
                       onClick={() => onQuickAmount(option.value)}
                       className={[
-                        "h-9 rounded-full text-[13px] font-semibold transition-colors",
+                        "h-9 cursor-pointer rounded-full text-[13px] font-semibold transition-colors",
                         selected
                           ? "bg-zinc-100 text-zinc-950"
                           : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800",
