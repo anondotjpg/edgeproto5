@@ -273,16 +273,18 @@ function BetSlipContent({
       ) : (
         <div>
           <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                 Place Bet
               </div>
 
-              <h2 className="mt-2 max-w-[66%] truncate text-2xl font-semibold tracking-tight text-zinc-100">
+              <h2 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-zinc-100">
                 {team}
               </h2>
 
-              <p className="mt-1 truncate text-sm text-zinc-400">{matchup}</p>
+              <p className="mt-1 text-sm leading-tight text-zinc-400">
+                {matchup}
+              </p>
             </div>
 
             {showCloseButton ? (
