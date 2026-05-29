@@ -10,7 +10,7 @@ import {
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
-} from "../components/ui/drawer";
+} from "@/components/ui/drawer";
 
 type OwnedAccount = {
   id: string;
@@ -760,7 +760,7 @@ export default function BetSlipModal({
           onOpenChange={handleOpenChange}
           repositionInputs={false}
         >
-          <DrawerContent className="max-h-none border-zinc-800 bg-zinc-950 text-white">
+          <DrawerContent className="max-h-none overflow-visible border-zinc-800 bg-zinc-950 text-white after:absolute after:inset-x-0 after:top-full after:h-[60vh] after:bg-zinc-950 after:content-['']">
             <DrawerHeader className="sr-only">
               <DrawerTitle>Place Bet</DrawerTitle>
               <DrawerDescription>
