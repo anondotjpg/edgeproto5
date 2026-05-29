@@ -548,8 +548,8 @@ export default async function AccountPage({ params }: AccountPageProps) {
   return (
     <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
       <div className="mx-auto mt-4 w-full max-w-6xl sm:mt-5">
-        <section className="h-[452px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[500px] sm:p-7 lg:h-[316px]">
-          <div className="grid h-full grid-rows-[220px_188px] gap-1 sm:grid-rows-[236px_188px] sm:gap-5 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:grid-rows-1 lg:items-center lg:gap-7">
+        <section className="h-[496px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[556px] sm:p-7 lg:h-[316px]">
+          <div className="grid h-full grid-rows-[224px_224px] gap-2 sm:grid-rows-[260px_224px] sm:gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:grid-rows-1 lg:items-center lg:gap-7">
             <div className="min-h-0 min-w-0 self-center overflow-visible">
               <div className="h-[46px] sm:h-[62px]">
                 <h1 className="truncate pb-1 text-[34px] font-semibold leading-[1.1] tracking-tight text-zinc-100 sm:text-[54px]">
@@ -593,8 +593,8 @@ export default async function AccountPage({ params }: AccountPageProps) {
               </div>
             </div>
 
-            <div className="h-full rounded-[26px] bg-black/30 p-4 ring-1 ring-zinc-900 sm:p-5 lg:h-[188px]">
-              <div className="grid h-full grid-rows-[28px_minmax(0,1fr)_62px] gap-3 sm:grid-rows-[28px_minmax(0,1fr)_64px]">
+            <div className="h-[224px] rounded-[26px] bg-black/30 p-5 ring-1 ring-zinc-900">
+              <div className="grid h-full grid-rows-[28px_64px_64px] gap-y-[14px]">
                 <div className="flex items-start justify-between gap-4">
                   <div className="text-[13px] font-medium leading-none text-zinc-500">
                     Goal
@@ -608,11 +608,11 @@ export default async function AccountPage({ params }: AccountPageProps) {
                 </div>
 
                 <div className="min-w-0 self-center">
-                  <div className="truncate pb-1 text-[22px] font-semibold leading-none tracking-tight text-zinc-100 sm:text-[28px]">
+                  <div className="truncate pb-1 text-[38px] font-semibold leading-none tracking-tight text-zinc-100 sm:text-[42px] lg:text-[34px]">
                     {formatMoney(ruleEquity)}
                   </div>
 
-                  <div className="mt-1 truncate text-[13px] font-medium leading-none text-zinc-500">
+                  <div className="mt-2 truncate text-[13px] font-medium leading-none text-zinc-500">
                     of {formatMoney(profitTargetBalance)} goal
                   </div>
                 </div>
