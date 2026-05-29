@@ -79,7 +79,7 @@ function BetCardSkeleton() {
 
 function GoalSkeleton() {
   return (
-    <div className="h-[220px] rounded-[26px] bg-black/30 p-4 ring-1 ring-zinc-900 sm:p-5 lg:h-[220px]">
+    <div className="h-[220px] rounded-[26px] bg-black/30 p-4 ring-1 ring-zinc-900 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="text-[13px] font-medium text-zinc-500">Goal</div>
@@ -115,11 +115,11 @@ export default function LoadingAccountPage() {
   return (
     <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
       <div className="mx-auto mt-7 w-full max-w-6xl">
-        <section className="h-[518px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[542px] sm:p-7 lg:h-[268px]">
-          <div className="grid h-full gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <div className="min-w-0">
-              <div className="h-[42px] sm:h-[56px]">
-                <SkeletonBlock className="h-[38px] w-64 max-w-full sm:h-[52px] sm:w-80" />
+        <section className="h-[548px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[572px] sm:p-7 lg:h-[430px]">
+          <div className="grid h-full gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div className="min-w-0 self-center">
+              <div className="h-[46px] sm:h-[62px]">
+                <SkeletonBlock className="h-[40px] w-64 max-w-full sm:h-[58px] sm:w-80" />
               </div>
 
               <div className="mt-5 sm:mt-6">
@@ -127,8 +127,8 @@ export default function LoadingAccountPage() {
                   Rule equity
                 </div>
 
-                <div className="mt-1 h-[64px] sm:h-[82px]">
-                  <SkeletonBlock className="h-[60px] w-64 max-w-full sm:h-[78px] sm:w-80" />
+                <div className="mt-1 h-[72px] sm:h-[92px]">
+                  <SkeletonBlock className="h-[66px] w-64 max-w-full sm:h-[86px] sm:w-80" />
                 </div>
 
                 <SkeletonBlock className="mt-2 h-4 w-36" />

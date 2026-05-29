@@ -548,11 +548,11 @@ export default async function AccountPage({ params }: AccountPageProps) {
   return (
     <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
       <div className="mx-auto mt-7 w-full max-w-6xl">
-        <section className="h-[518px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[542px] sm:p-7 lg:h-[268px]">
-          <div className="grid h-full gap-5 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <div className="min-w-0">
-              <div className="h-[42px] sm:h-[56px]">
-                <h1 className="break-words pb-1 text-[34px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[48px]">
+        <section className="h-[548px] rounded-[32px] bg-zinc-950/90 p-5 sm:h-[572px] sm:p-7 lg:h-[430px]">
+          <div className="grid h-full gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div className="min-w-0 self-center">
+              <div className="h-[46px] sm:h-[62px]">
+                <h1 className="truncate pb-1 text-[34px] font-semibold leading-[1.1] tracking-tight text-zinc-100 sm:text-[54px]">
                   {pageTitle}
                 </h1>
               </div>
@@ -562,8 +562,8 @@ export default async function AccountPage({ params }: AccountPageProps) {
                   Rule equity
                 </div>
 
-                <div className="mt-1 h-[64px] sm:h-[82px]">
-                  <div className="pb-1 text-[52px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[68px]">
+                <div className="mt-1 h-[72px] sm:h-[92px]">
+                  <div className="truncate pb-1 text-[58px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[76px]">
                     {formatMoney(ruleEquity)}
                   </div>
                 </div>
@@ -593,7 +593,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
               </div>
             </div>
 
-            <div className="h-[220px] rounded-[26px] bg-black/30 p-4 ring-1 ring-zinc-900 sm:p-5 lg:h-[220px]">
+            <div className="h-[220px] rounded-[26px] bg-black/30 p-4 ring-1 ring-zinc-900 sm:p-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-[13px] font-medium text-zinc-500">
