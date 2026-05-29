@@ -97,35 +97,39 @@ function useKeyboardAwareDrawer(active: boolean) {
   useEffect(() => {
     if (!active) return;
 
-    const vv = window.visualViewport;
+    const viewport = window.visualViewport;
     const el = contentRef.current;
-    if (!vv || !el) return;
+    if (!viewport || !el) return;
+
+    // Capture as guaranteed non-null locals for use inside the closure.
+    const vp: VisualViewport = viewport;
+    const node: HTMLDivElement = el;
 
     function update() {
       // How much of the layout viewport the keyboard is covering.
       const keyboardHeight = Math.max(
         0,
-        window.innerHeight - vv.height - vv.offsetTop
+        window.innerHeight - vp.height - vp.offsetTop
       );
 
       // Lift the drawer so its bottom edge sits right on top of the keyboard.
-      el.style.bottom = `${keyboardHeight}px`;
+      node.style.bottom = `${keyboardHeight}px`;
 
       // Keep the whole drawer inside the *visible* area so it can scroll
       // instead of hiding content behind the keyboard.
-      el.style.setProperty("max-height", `${vv.height}px`, "important");
+      node.style.setProperty("max-height", `${vp.height}px`, "important");
     }
 
     update();
-    vv.addEventListener("resize", update);
-    vv.addEventListener("scroll", update);
+    vp.addEventListener("resize", update);
+    vp.addEventListener("scroll", update);
 
     return () => {
-      vv.removeEventListener("resize", update);
-      vv.removeEventListener("scroll", update);
+      vp.removeEventListener("resize", update);
+      vp.removeEventListener("scroll", update);
       // Reset so the closed drawer / next open starts clean.
-      el.style.bottom = "";
-      el.style.removeProperty("max-height");
+      node.style.bottom = "";
+      node.style.removeProperty("max-height");
     };
   }, [active]);
 
