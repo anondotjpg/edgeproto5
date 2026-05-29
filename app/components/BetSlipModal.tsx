@@ -81,6 +81,7 @@ function useIsMobile() {
     }
 
     updateIsMobile();
+
     query.addEventListener("change", updateIsMobile);
 
     return () => {
@@ -791,7 +792,12 @@ export default function BetSlipModal({
           onOpenChange={handleOpenChange}
           repositionInputs={false}
         >
-          <DrawerContent className="overflow-visible border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none data-[vaul-drawer-direction=bottom]:max-h-none after:pointer-events-none after:absolute after:inset-x-0 after:top-full after:h-[140svh] after:bg-zinc-950 after:content-[''] before:pointer-events-none before:absolute before:inset-x-0 before:top-[calc(100%-1px)] before:h-[140svh] before:bg-zinc-950 before:content-['']">
+          <DrawerContent className="relative max-h-[calc(100dvh-52px)] overflow-visible border-zinc-800 bg-zinc-950 text-white outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 data-[state=open]:outline-none">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-[calc(100%-1px)] h-[140dvh] bg-zinc-950"
+            />
+
             <DrawerHeader className="sr-only">
               <DrawerTitle>Place Bet</DrawerTitle>
               <DrawerDescription>
@@ -799,10 +805,10 @@ export default function BetSlipModal({
               </DrawerDescription>
             </DrawerHeader>
 
-            <div className="mx-auto w-full max-w-2xl px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
+            <div className="relative z-10 mx-auto w-full max-w-2xl px-5 pb-[max(18px,env(safe-area-inset-bottom))] pt-2">
               <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-zinc-800" />
 
-              <div className="max-h-[calc(100svh-92px)] overflow-y-auto overscroll-contain pb-1">
+              <div className="max-h-[calc(100dvh-92px)] overflow-y-auto overscroll-contain pb-1">
                 {content}
               </div>
             </div>
