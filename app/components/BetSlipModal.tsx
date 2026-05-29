@@ -4,6 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { usePrivy } from "@privy-io/react-auth";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "../components/ui/drawer";
 
 type OwnedAccount = {
   id: string;
@@ -63,10 +70,33 @@ const ACCOUNT_SELECT_SHELL_CLASS = "mt-5 h-[122px]";
 
 const ACCOUNT_LIST_CLASS = "mt-3 h-[92px] overflow-hidden";
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+
+    function updateIsMobile() {
+      setIsMobile(query.matches);
+    }
+
+    updateIsMobile();
+    query.addEventListener("change", updateIsMobile);
+
+    return () => {
+      query.removeEventListener("change", updateIsMobile);
+    };
+  }, []);
+
+  return isMobile;
+}
+
 function parseAmount(value: string) {
   const normalized = value.replace(/[^0-9.]/g, "");
   const parts = normalized.split(".");
+
   if (parts.length <= 1) return normalized;
+
   return `${parts[0]}.${parts.slice(1).join("").slice(0, 2)}`;
 }
 
@@ -153,6 +183,253 @@ function AccountOptionSkeleton() {
   );
 }
 
+function BetSlipContent({
+  team,
+  matchup,
+  odds,
+  impliedPercent,
+  ready,
+  authenticated,
+  login,
+  accounts,
+  selectedAccountIds,
+  isLoadingAccounts,
+  isPlacing,
+  amount,
+  possiblePayout,
+  statusMessage,
+  statusTone,
+  ruleWarning,
+  showCloseButton,
+  onClose,
+  onToggleAccount,
+  onAmountChange,
+  onPlaceBet,
+}: {
+  team: string;
+  matchup: string;
+  odds: string;
+  impliedPercent: string;
+  ready: boolean;
+  authenticated: boolean;
+  login: () => void;
+  accounts: OwnedAccount[];
+  selectedAccountIds: string[];
+  isLoadingAccounts: boolean;
+  isPlacing: boolean;
+  amount: string;
+  possiblePayout: string;
+  statusMessage: string | null;
+  statusTone: "warning" | "error" | null;
+  ruleWarning: string | null;
+  showCloseButton: boolean;
+  onClose: () => void;
+  onToggleAccount: (accountId: string) => void;
+  onAmountChange: (value: string) => void;
+  onPlaceBet: () => void;
+}) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+            Place Bet
+          </div>
+
+          <h2 className="mt-2 truncate text-2xl font-semibold tracking-tight text-zinc-100">
+            {team}
+          </h2>
+
+          <p className="mt-1 truncate text-sm text-zinc-400">{matchup}</p>
+        </div>
+
+        {showCloseButton ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 cursor-pointer rounded-full border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 transition-colors hover:text-white"
+          >
+            Close
+          </button>
+        ) : null}
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-zinc-800 bg-black/30 p-4">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+            Moneyline
+          </div>
+
+          <div className="mt-1 text-xl font-semibold text-zinc-100">{odds}</div>
+        </div>
+
+        <div className="rounded-2xl border border-zinc-800 bg-black/30 p-4">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
+            Implied
+          </div>
+
+          <div className="mt-1 text-xl font-semibold text-zinc-100">
+            {impliedPercent}
+          </div>
+        </div>
+      </div>
+
+      <div className={ACCOUNT_SELECT_SHELL_CLASS}>
+        <div className="h-[18px] text-sm font-medium leading-[18px] text-zinc-300">
+          Select account
+        </div>
+
+        <div className={ACCOUNT_LIST_CLASS}>
+          {!ready || isLoadingAccounts ? (
+            <div className={ACCOUNT_GRID_CLASS}>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <AccountOptionSkeleton key={index} />
+              ))}
+            </div>
+          ) : !authenticated ? (
+            <button
+              type="button"
+              onClick={login}
+              className="h-full w-full rounded-2xl border border-zinc-800 bg-black/30 p-4 text-left text-sm text-zinc-300"
+            >
+              Sign in to select an account.
+            </button>
+          ) : accounts.length ? (
+            <div className={ACCOUNT_GRID_CLASS}>
+              {accounts.map((account) => {
+                const selected = selectedAccountIds.includes(account.id);
+                const active = ["active", "active_dev"].includes(
+                  account.status
+                );
+
+                const maxRiskAmount = getMaxRiskAmount(account);
+
+                return (
+                  <button
+                    key={account.id}
+                    type="button"
+                    onClick={() => {
+                      if (active) onToggleAccount(account.id);
+                    }}
+                    disabled={!active}
+                    className={[
+                      ACCOUNT_CARD_CLASS,
+                      "disabled:cursor-not-allowed disabled:opacity-50",
+                      selected
+                        ? "border-zinc-400 bg-zinc-900"
+                        : "border-zinc-800 bg-black/30 hover:border-zinc-700",
+                    ].join(" ")}
+                  >
+                    <div className="flex h-5 items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-5 text-zinc-100">
+                        {getAccountDisplayName(account)}
+                        <span className="font-normal text-zinc-500">
+                          {" "}
+                          · {getAccountMeta(account)}
+                        </span>
+                      </div>
+
+                      <div
+                        className={[
+                          "mt-1 h-3.5 w-3.5 shrink-0 rounded-full border",
+                          selected
+                            ? "border-zinc-100 bg-zinc-100"
+                            : "border-zinc-700",
+                        ].join(" ")}
+                      />
+                    </div>
+
+                    <div className="mt-3 space-y-1.5 text-[12px] leading-4">
+                      <div className="flex h-4 items-center justify-between gap-2">
+                        <span className="text-zinc-500">Avail</span>
+                        <span className="font-medium text-zinc-300">
+                          {formatCompactMoney(account.current_balance)}
+                        </span>
+                      </div>
+
+                      <div className="flex h-4 items-center justify-between gap-2">
+                        <span className="text-zinc-500">Max</span>
+                        <span className="font-medium text-zinc-300">
+                          {formatCompactMoney(maxRiskAmount)}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex h-full items-center rounded-2xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500">
+              No accounts found. Start a challenge first.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <label className="mt-5 block">
+        <span className="text-sm font-medium text-zinc-300">Bet amount</span>
+
+        <div className="mt-2 flex h-12 items-center rounded-2xl border border-zinc-800 bg-black/30 px-4 focus-within:border-zinc-600">
+          <span className="text-zinc-500">$</span>
+
+          <input
+            value={amount}
+            onChange={(event) => onAmountChange(event.target.value)}
+            placeholder="0.00"
+            inputMode="decimal"
+            maxLength={7}
+            className="h-full min-w-0 flex-1 bg-transparent px-2 text-lg font-semibold text-white outline-none placeholder:text-zinc-600"
+          />
+        </div>
+
+        <div className="mt-1 text-right text-[12px] text-zinc-500">
+          pot. payout{" "}
+          <span className="font-semibold text-zinc-300">{possiblePayout}</span>
+        </div>
+      </label>
+
+      <AnimatePresence initial={false}>
+        {statusMessage ? (
+          <motion.div
+            key={statusMessage}
+            initial={{ height: 0, opacity: 0, marginTop: 0 }}
+            animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+            exit={{ height: 0, opacity: 0, marginTop: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div
+              className={[
+                "rounded-2xl border p-3 text-sm",
+                statusTone === "warning"
+                  ? "border-yellow-950 bg-yellow-950/20 text-yellow-200"
+                  : "border-red-950 bg-red-950/20 text-red-300",
+              ].join(" ")}
+            >
+              {statusMessage}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <button
+        type="button"
+        onClick={onPlaceBet}
+        disabled={
+          isPlacing ||
+          !amount ||
+          Number(amount) <= 0 ||
+          !selectedAccountIds.length ||
+          Boolean(ruleWarning)
+        }
+        className="mt-5 h-12 w-full cursor-pointer rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {isPlacing ? "Placing..." : "Place Bet"}
+      </button>
+    </>
+  );
+}
+
 export default function BetSlipModal({
   team,
   gameId,
@@ -174,6 +451,7 @@ export default function BetSlipModal({
   polymarketTokenId,
 }: BetSlipModalProps) {
   const { ready, authenticated, login, getAccessToken } = usePrivy();
+  const isMobile = useIsMobile();
 
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
@@ -241,6 +519,19 @@ export default function BetSlipModal({
     if (!ready || authenticated) {
       setIsLoadingAccounts(true);
     }
+  }
+
+  function closeBetSlip() {
+    setOpen(false);
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (nextOpen) {
+      openBetSlip();
+      return;
+    }
+
+    closeBetSlip();
   }
 
   useEffect(() => {
@@ -413,235 +704,83 @@ export default function BetSlipModal({
     }
   }
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={openBetSlip}
+  const trigger = (
+    <button
+      type="button"
+      onClick={openBetSlip}
+      className={
+        triggerClassName ??
+        "flex min-h-[56px] min-w-[104px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-transparent px-4 py-3 text-center transition-colors hover:bg-zinc-900"
+      }
+    >
+      <div
         className={
-          triggerClassName ??
-          "flex min-h-[56px] min-w-[104px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-transparent px-4 py-3 text-center transition-colors hover:bg-zinc-900"
+          triggerContentClassName ??
+          "text-[20px] font-semibold tracking-tight text-zinc-100"
         }
       >
-        <div
-          className={
-            triggerContentClassName ??
-            "text-[20px] font-semibold tracking-tight text-zinc-100"
-          }
-        >
-          {odds}
-        </div>
-      </button>
+        {odds}
+      </div>
+    </button>
+  );
 
-      {open ? (
+  const content = (
+    <BetSlipContent
+      team={team}
+      matchup={matchup}
+      odds={odds}
+      impliedPercent={impliedPercent}
+      ready={ready}
+      authenticated={authenticated}
+      login={login}
+      accounts={accounts}
+      selectedAccountIds={selectedAccountIds}
+      isLoadingAccounts={isLoadingAccounts}
+      isPlacing={isPlacing}
+      amount={amount}
+      possiblePayout={possiblePayout}
+      statusMessage={statusMessage}
+      statusTone={statusTone}
+      ruleWarning={ruleWarning}
+      showCloseButton={!isMobile}
+      onClose={closeBetSlip}
+      onToggleAccount={toggleAccount}
+      onAmountChange={handleAmountChange}
+      onPlaceBet={placeBet}
+    />
+  );
+
+  return (
+    <>
+      {trigger}
+
+      {isMobile ? (
+        <Drawer open={open} onOpenChange={handleOpenChange}>
+          <DrawerContent className="max-h-[92dvh] border-zinc-800 bg-zinc-950 text-white">
+            <DrawerHeader className="sr-only">
+              <DrawerTitle>Place Bet</DrawerTitle>
+              <DrawerDescription>
+                Choose an account and enter an amount to place this bet.
+              </DrawerDescription>
+            </DrawerHeader>
+
+            <div className="mx-auto w-full max-w-2xl overflow-y-auto px-5 pb-5 pt-2">
+              <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-zinc-800" />
+              {content}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ) : open ? (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/75 px-4 pb-4 sm:items-center sm:pb-0">
           <button
             type="button"
             aria-label="Close bet slip"
             className="absolute inset-0 cursor-default"
-            onClick={() => setOpen(false)}
+            onClick={closeBetSlip}
           />
 
           <div className="relative w-full max-w-2xl rounded-[28px] border border-zinc-800 bg-zinc-950 p-5 text-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                  Place Bet
-                </div>
-
-                <h2 className="mt-2 truncate text-2xl font-semibold tracking-tight text-zinc-100">
-                  {team}
-                </h2>
-
-                <p className="mt-1 truncate text-sm text-zinc-400">
-                  {matchup}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="shrink-0 cursor-pointer rounded-full border border-zinc-800 px-3 py-1.5 text-sm text-zinc-400 transition-colors hover:text-white"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-zinc-800 bg-black/30 p-4">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
-                  Moneyline
-                </div>
-                <div className="mt-1 text-xl font-semibold text-zinc-100">
-                  {odds}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-800 bg-black/30 p-4">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">
-                  Implied
-                </div>
-                <div className="mt-1 text-xl font-semibold text-zinc-100">
-                  {impliedPercent}
-                </div>
-              </div>
-            </div>
-
-            <div className={ACCOUNT_SELECT_SHELL_CLASS}>
-              <div className="h-[18px] text-sm font-medium leading-[18px] text-zinc-300">
-                Select account
-              </div>
-
-              <div className={ACCOUNT_LIST_CLASS}>
-                {!ready || isLoadingAccounts ? (
-                  <div className={ACCOUNT_GRID_CLASS}>
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <AccountOptionSkeleton key={index} />
-                    ))}
-                  </div>
-                ) : !authenticated ? (
-                  <button
-                    type="button"
-                    onClick={login}
-                    className="h-full w-full rounded-2xl border border-zinc-800 bg-black/30 p-4 text-left text-sm text-zinc-300"
-                  >
-                    Sign in to select an account.
-                  </button>
-                ) : accounts.length ? (
-                  <div className={ACCOUNT_GRID_CLASS}>
-                    {accounts.map((account) => {
-                      const selected = selectedAccountIds.includes(account.id);
-                      const active = ["active", "active_dev"].includes(
-                        account.status
-                      );
-
-                      const maxRiskAmount = getMaxRiskAmount(account);
-
-                      return (
-                        <button
-                          key={account.id}
-                          type="button"
-                          onClick={() => {
-                            if (active) toggleAccount(account.id);
-                          }}
-                          disabled={!active}
-                          className={[
-                            ACCOUNT_CARD_CLASS,
-                            "disabled:cursor-not-allowed disabled:opacity-50",
-                            selected
-                              ? "border-zinc-400 bg-zinc-900"
-                              : "border-zinc-800 bg-black/30 hover:border-zinc-700",
-                          ].join(" ")}
-                        >
-                          <div className="flex h-5 items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-5 text-zinc-100">
-                              {getAccountDisplayName(account)}
-                              <span className="font-normal text-zinc-500">
-                                {" "}
-                                · {getAccountMeta(account)}
-                              </span>
-                            </div>
-
-                            <div
-                              className={[
-                                "mt-1 h-3.5 w-3.5 shrink-0 rounded-full border",
-                                selected
-                                  ? "border-zinc-100 bg-zinc-100"
-                                  : "border-zinc-700",
-                              ].join(" ")}
-                            />
-                          </div>
-
-                          <div className="mt-3 space-y-1.5 text-[12px] leading-4">
-                            <div className="flex h-4 items-center justify-between gap-2">
-                              <span className="text-zinc-500">Avail</span>
-                              <span className="font-medium text-zinc-300">
-                                {formatCompactMoney(account.current_balance)}
-                              </span>
-                            </div>
-
-                            <div className="flex h-4 items-center justify-between gap-2">
-                              <span className="text-zinc-500">Max</span>
-                              <span className="font-medium text-zinc-300">
-                                {formatCompactMoney(maxRiskAmount)}
-                              </span>
-                            </div>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="flex h-full items-center rounded-2xl border border-zinc-800 bg-black/30 p-4 text-sm text-zinc-500">
-                    No accounts found. Start a challenge first.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <label className="mt-5 block">
-              <span className="text-sm font-medium text-zinc-300">
-                Bet amount
-              </span>
-
-              <div className="mt-2 flex h-12 items-center rounded-2xl border border-zinc-800 bg-black/30 px-4 focus-within:border-zinc-600">
-                <span className="text-zinc-500">$</span>
-                <input
-                  value={amount}
-                  onChange={(event) => handleAmountChange(event.target.value)}
-                  placeholder="0.00"
-                  inputMode="decimal"
-                  maxLength={7}
-                  className="h-full min-w-0 flex-1 bg-transparent px-2 text-lg font-semibold text-white outline-none placeholder:text-zinc-600"
-                />
-              </div>
-
-              <div className="mt-1 text-right text-[12px] text-zinc-500">
-                pot. payout{" "}
-                <span className="font-semibold text-zinc-300">
-                  {possiblePayout}
-                </span>
-              </div>
-            </label>
-
-            <AnimatePresence initial={false}>
-              {statusMessage ? (
-                <motion.div
-                  key={statusMessage}
-                  initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                  animate={{ height: "auto", opacity: 1, marginTop: 16 }}
-                  exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="overflow-hidden"
-                >
-                  <div
-                    className={[
-                      "rounded-2xl border p-3 text-sm",
-                      statusTone === "warning"
-                        ? "border-yellow-950 bg-yellow-950/20 text-yellow-200"
-                        : "border-red-950 bg-red-950/20 text-red-300",
-                    ].join(" ")}
-                  >
-                    {statusMessage}
-                  </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-
-            <button
-              type="button"
-              onClick={placeBet}
-              disabled={
-                isPlacing ||
-                !amount ||
-                Number(amount) <= 0 ||
-                !selectedAccountIds.length ||
-                Boolean(ruleWarning)
-              }
-              className="mt-5 h-12 w-full cursor-pointer rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {isPlacing ? "Placing..." : "Place Bet"}
-            </button>
+            {content}
           </div>
         </div>
       ) : null}
