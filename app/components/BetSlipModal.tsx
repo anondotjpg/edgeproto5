@@ -760,7 +760,7 @@ export default function BetSlipModal({
           onOpenChange={handleOpenChange}
           repositionInputs={false}
         >
-          <DrawerContent className="max-h-none border-zinc-800 bg-zinc-950 text-white">
+          <DrawerContent className="bottom-[-420px] max-h-none border-zinc-800 bg-zinc-950 pb-[420px] text-white">
             <DrawerHeader className="sr-only">
               <DrawerTitle>Place Bet</DrawerTitle>
               <DrawerDescription>
