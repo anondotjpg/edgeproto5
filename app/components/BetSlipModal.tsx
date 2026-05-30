@@ -212,7 +212,7 @@ const BetSlipHeader = memo(function BetSlipHeader({
       className={[
         "relative pr-[122px]",
         panelMode === "sidebar"
-          ? "min-h-[86px] px-5 py-4"
+          ? "min-h-[72px] px-5 pt-4 pb-1"
           : mobileLayout
             ? "min-h-[64px] pt-[2px]"
             : "min-h-[72px]",
@@ -382,6 +382,7 @@ const AccountSelectSection = memo(function AccountSelectSection({
   selectedAccountIds,
   isLoadingAccounts,
   mobileLayout,
+  panelMode,
   onToggleAccount,
 }: {
   ready: boolean;
@@ -391,6 +392,7 @@ const AccountSelectSection = memo(function AccountSelectSection({
   selectedAccountIds: string[];
   isLoadingAccounts: boolean;
   mobileLayout: boolean;
+  panelMode: "modal" | "sidebar";
   onToggleAccount: (accountId: string) => void;
 }) {
   const accountRowRef = useRef<HTMLDivElement | null>(null);
@@ -460,7 +462,11 @@ const AccountSelectSection = memo(function AccountSelectSection({
   const reserveAccountControlSpace = authenticated;
 
   return (
-    <div className={ACCOUNT_SELECT_SHELL_CLASS}>
+    <div
+      className={
+        panelMode === "sidebar" ? "mt-2 h-[126px]" : ACCOUNT_SELECT_SHELL_CLASS
+      }
+    >
       <div className="flex h-[18px] items-center justify-between gap-3">
         <div className="text-sm font-medium leading-[18px] text-zinc-300">
           Select account
@@ -717,6 +723,7 @@ function BetSlipControls({
         selectedAccountIds={selectedAccountIds}
         isLoadingAccounts={isLoadingAccounts}
         mobileLayout={mobileLayout}
+        panelMode={panelMode}
         onToggleAccount={onToggleAccount}
       />
 
