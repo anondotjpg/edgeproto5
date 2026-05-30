@@ -933,7 +933,6 @@ function BetSlipControls({
 
               <motion.div
                 layout
-                key={amountValue}
                 initial={{ opacity: 0.75, y: 2 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
