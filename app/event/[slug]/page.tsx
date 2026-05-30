@@ -237,10 +237,22 @@ function TeamPanel({
 
         <div className="flex flex-col items-end gap-2">
           <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
-            Moneyline
+            <span className="md:hidden">ML</span>
+            <span className="hidden md:inline">Moneyline</span>
           </div>
 
-          <BetSlipModal {...betData} />
+          <div
+            className="rounded-xl bg-zinc-800"
+            style={{
+              paddingBottom: "2px",
+            }}
+          >
+            <BetSlipModal
+              {...betData}
+              triggerClassName="flex h-[42px] min-w-[84px] translate-y-[-2px] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0"
+              triggerContentClassName="text-[13px] font-semibold leading-none tracking-tight text-zinc-100"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -256,7 +268,7 @@ export default async function EventPage({ params }: EventPageProps) {
     return (
       <div className="min-h-screen bg-[#09090b] pb-24 text-white md:pb-0">
         <div className="mx-auto w-full max-w-5xl min-w-0 px-4 py-10 sm:px-6 sm:py-12">
-          <div className="mb-6">
+          <div className="mb-6 invisible">
             <BackButton />
           </div>
 
@@ -284,7 +296,7 @@ export default async function EventPage({ params }: EventPageProps) {
   return (
     <div className="min-h-screen bg-[#09090b] pb-24 text-white md:pb-0">
       <div className="mx-auto w-full max-w-5xl min-w-0 px-4 py-10 sm:px-6 sm:py-12">
-        <header className="mb-6">
+        <header className="mb-6 invisible">
           <BackButton />
         </header>
 
