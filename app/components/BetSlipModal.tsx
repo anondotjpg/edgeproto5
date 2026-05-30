@@ -777,7 +777,7 @@ function BetSlipControls({
             </div>
 
             <div className="flex items-end justify-between gap-4">
-              <div className="pb-2 text-sm font-medium leading-none text-zinc-300">
+              <div className="pb-2 text-lg font-medium leading-none text-zinc-300">
                 Amount
               </div>
 
