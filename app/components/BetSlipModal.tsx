@@ -14,7 +14,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { usePrivy } from "@privy-io/react-auth";
-import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import {
   Drawer,
   DrawerContent,
@@ -491,7 +491,7 @@ const AccountSelectSection = memo(function AccountSelectSection({
               disabled={!canScrollBack}
               className="flex h-[18px] w-5 cursor-pointer items-center justify-center text-zinc-500 transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
             >
-              <FiArrowLeft className="h-3.5 w-3.5" />
+              <FaChevronLeft className="h-3.5 w-3.5" />
             </button>
 
             <button
@@ -501,7 +501,7 @@ const AccountSelectSection = memo(function AccountSelectSection({
               disabled={!canScrollForward}
               className="flex h-[18px] w-5 cursor-pointer items-center justify-center text-zinc-500 transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
             >
-              <FiArrowRight className="h-3.5 w-3.5" />
+              <FaChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
         ) : null}
