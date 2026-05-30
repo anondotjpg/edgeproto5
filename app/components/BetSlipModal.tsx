@@ -268,8 +268,6 @@ function AccountOptionSkeleton() {
         <div className="min-w-0 flex-1">
           <SkeletonBlock className="h-5 w-full max-w-[150px] bg-zinc-800" />
         </div>
-
-        <div className="mt-1 h-3.5 w-3.5 shrink-0 animate-pulse rounded-full border border-zinc-700 bg-transparent" />
       </div>
 
       <div className="mt-3 space-y-1 text-[12px] leading-4">
