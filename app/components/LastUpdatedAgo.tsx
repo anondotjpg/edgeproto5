@@ -57,7 +57,7 @@ export default function LastUpdatedAgo({
 
   return (
     <div
-      className="w-[112px] shrink-0 text-left text-[13px] leading-tight text-zinc-500 tabular-nums"
+      className="w-[112px] shrink-0 text-left text-[13px] leading-tight text-zinc-500 tabular-nums invisible"
       title={title}
       suppressHydrationWarning
     >

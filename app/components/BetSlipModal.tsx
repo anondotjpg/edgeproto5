@@ -490,7 +490,7 @@ function BetSlipContent({
         className={[
           "relative pr-[122px]",
           panelMode === "sidebar"
-            ? "min-h-[86px] border-b border-zinc-800 px-5 py-4"
+            ? "min-h-[86px] px-5 py-4"
             : mobileLayout
               ? "min-h-[64px] pt-[2px]"
               : "min-h-[72px]",

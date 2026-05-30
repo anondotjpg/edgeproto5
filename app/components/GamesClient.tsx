@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { FiArrowUpRight } from "react-icons/fi";
 import { FaChevronRight } from "react-icons/fa";
 import LastUpdatedAgo from "./LastUpdatedAgo";
 import LeagueTabs from "./LeagueTabs";
@@ -73,16 +72,36 @@ function formatImpliedPercent(price?: number) {
   return `${Math.round(probability * 100)}%`;
 }
 
-function formatGameTime(date: string) {
-  const formatted = new Date(date).toLocaleString("en-US", {
+function getGameDateKey(date: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(date));
+
+  const year = parts.find((part) => part.type === "year")?.value ?? "";
+  const month = parts.find((part) => part.type === "month")?.value ?? "";
+  const day = parts.find((part) => part.type === "day")?.value ?? "";
+
+  return `${year}-${month}-${day}`;
+}
+
+function formatGameDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
     month: "short",
     day: "numeric",
+  });
+}
+
+function formatGameTime(date: string) {
+  return new Date(date).toLocaleTimeString("en-US", {
+    timeZone: "America/New_York",
     hour: "numeric",
     minute: "2-digit",
   });
-
-  return `${formatted} EST`;
 }
 
 function getLogoClassName(sportKey: string) {
@@ -256,15 +275,16 @@ function MoneylineCell({
   );
 }
 
-function MarketHeader() {
+function DateMarketHeader({ date }: { date: string }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_84px] gap-2 px-0 md:px-3">
-      <div className="pl-1 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
-        Teams
+    <div className="grid grid-cols-[minmax(0,1fr)_84px] items-end gap-2 md:pr-3">
+      <div className="text-[22px] font-semibold leading-none tracking-tight text-zinc-100">
+        {date}
       </div>
 
-      <div className="flex items-center justify-center text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
-        ML
+      <div className="flex items-center justify-center pb-0.5 text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+        <span className="md:hidden">ML</span>
+        <span className="hidden md:inline">Moneyline</span>
       </div>
     </div>
   );
@@ -293,7 +313,21 @@ function GameCard({
     selectedBet?.gameId === game.id && selectedBet.team === game.home_team;
 
   return (
-    <article className="relative pb-7 md:rounded-xl md:border md:border-zinc-800 md:p-3 md:pb-9">
+    <article className="relative md:rounded-xl md:border md:border-zinc-800 md:p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="inline-flex h-7 items-center rounded-xl bg-zinc-900 px-3 text-[11px] font-medium text-zinc-100">
+          {formatGameTime(game.commence_time)}
+        </div>
+
+        <Link
+          href={eventHref}
+          className="inline-flex h-8 items-center gap-2 rounded-xl bg-zinc-900 px-3 text-[13px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800"
+        >
+          <span>Game View</span>
+          <FaChevronRight className="h-2.5 w-2.5" />
+        </Link>
+      </div>
+
       <div className="grid grid-cols-[minmax(0,1fr)_84px] gap-2">
         <div>
           <TeamRow
@@ -329,18 +363,6 @@ function GameCard({
           />
         </div>
       </div>
-
-      <div className="absolute bottom-0 left-1 text-[12px] text-zinc-500 md:bottom-3 md:left-3">
-        {formatGameTime(game.commence_time)}
-      </div>
-
-      <Link
-        href={eventHref}
-        className="absolute bottom-0 right-1 inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-500 transition-colors hover:text-white md:bottom-3 md:right-3"
-      >
-        <span>View</span>
-        <FaChevronRight className="h-2.5 w-2.5" />
-      </Link>
     </article>
   );
 }
@@ -376,6 +398,31 @@ export default function GamesClient({
       side: "away",
     });
   }, [league]);
+
+  const groupedGames = useMemo(() => {
+    const groups: {
+      key: string;
+      date: string;
+      games: Game[];
+    }[] = [];
+
+    for (const game of league?.games ?? []) {
+      const key = getGameDateKey(game.commence_time);
+      const existingGroup = groups.find((group) => group.key === key);
+
+      if (existingGroup) {
+        existingGroup.games.push(game);
+      } else {
+        groups.push({
+          key,
+          date: formatGameDate(game.commence_time),
+          games: [game],
+        });
+      }
+    }
+
+    return groups;
+  }, [league?.games]);
 
   useEffect(() => {
     setSelectedBet(firstBet);
@@ -415,36 +462,45 @@ export default function GamesClient({
 
               {!league || league.games.length === 0 ? (
                 <div className="rounded-xl border border-zinc-900 p-4 text-[13px] text-zinc-400">
-                  No active {selectedLeagueMeta.label} markets right now.
+                  No active {selectedLeagueMeta.label} markets right now
                 </div>
               ) : (
-                <div className="grid gap-2">
-                  <MarketHeader />
+                <div className="grid gap-7">
+                  {groupedGames.map((group) => (
+                    <div key={group.key} className="grid gap-2">
+                      <DateMarketHeader date={group.date} />
 
-                  <div className="grid gap-5 md:gap-3">
-                    {league.games.map((game) => (
-                      <GameCard
-                        key={game.id}
-                        game={game}
-                        selectedBet={selectedBet}
-                        onSelectBet={setSelectedBet}
-                      />
-                    ))}
-                  </div>
+                      <div className="grid gap-5 md:gap-3">
+                        {group.games.map((game) => (
+                          <GameCard
+                            key={game.id}
+                            game={game}
+                            selectedBet={selectedBet}
+                            onSelectBet={setSelectedBet}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </section>
           </main>
 
           <aside className="sticky top-18 hidden xl:block">
-            <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl">
-              {selectedBet ? (
-                <BetSlipPanel {...selectedBet} enabled panelMode="sidebar" />
-              ) : (
-                <div className="p-5 text-sm text-zinc-500">
-                  Select a moneyline to place a bet.
-                </div>
-              )}
+            <div
+                className={[
+                    "overflow-hidden rounded-2xl bg-zinc-950 shadow-2xl",
+                    selectedBet ? "border border-zinc-800" : "border border-transparent",
+                ].join(" ")}
+            >
+                {selectedBet ? (
+                    <BetSlipPanel {...selectedBet} enabled panelMode="sidebar" />
+                ) : (
+                    <div className="p-5 text-sm text-zinc-500 invisible">
+                    Select a moneyline to place a bet.
+                    </div>
+                )}
             </div>
           </aside>
         </div>
