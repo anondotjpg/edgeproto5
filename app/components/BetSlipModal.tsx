@@ -887,7 +887,7 @@ function BetSlipControls({
                       className={[
                         "h-9 cursor-pointer rounded-lg text-[13px] font-semibold transition-colors",
                         selected
-                          ? "bg-zinc-100 text-zinc-950"
+                          ? "bg-zinc-700 text-zinc-300"
                           : "bg-zinc-900 text-zinc-300 hover:bg-zinc-800",
                       ].join(" ")}
                     >
