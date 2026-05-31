@@ -43,36 +43,96 @@ function RuleSkeleton({ label }: { label: string }) {
   );
 }
 
-function BetCardSkeleton() {
+function TableSectionHeaderSkeleton({
+  title,
+  showOpenRisk,
+}: {
+  title: string;
+  showOpenRisk?: boolean;
+}) {
   return (
-    <div className="min-h-[154px] rounded-[22px] bg-zinc-950/80 p-4 ring-1 ring-zinc-900">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <SkeletonBlock className="h-5 w-36" />
-          <SkeletonBlock className="mt-2 h-3 w-32" />
+    <div className="flex items-center justify-between gap-4 border-b border-zinc-900 bg-zinc-950 px-3 py-3.5 sm:px-5 sm:py-4 lg:min-w-[640px]">
+      <h2 className="text-base font-semibold tracking-tight text-zinc-100 sm:text-xl">
+        {title} <span className="text-zinc-500">(0)</span>
+      </h2>
+
+      {showOpenRisk ? <SkeletonBlock className="h-4 w-28" /> : null}
+    </div>
+  );
+}
+
+function TableHeaderSkeleton({ labels }: { labels: string[] }) {
+  return (
+    <div className="hidden min-w-[640px] grid-cols-[minmax(220px,1fr)_86px_86px_104px_116px] border-b border-zinc-900 bg-black/20 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 lg:grid lg:px-5">
+      {labels.map((label, index) => (
+        <div key={label} className={index >= 2 ? "text-right" : "text-left"}>
+          {label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PositionRowSkeleton() {
+  return (
+    <div className="border-b border-zinc-900/80 px-3 py-2.5 last:border-b-0 sm:px-5 sm:py-3">
+      <div className="lg:hidden">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <SkeletonBlock className="h-8 w-8 rounded-lg" />
+          <div className="min-w-0 flex-1 pr-2">
+            <SkeletonBlock className="h-4 w-28" />
+            <SkeletonBlock className="mt-1.5 h-3 w-24" />
+          </div>
+          <SkeletonBlock className="mt-px h-4 w-12" />
         </div>
 
-        <SkeletonBlock className="h-7 w-16 rounded-full" />
+        <div className="mt-2 flex justify-end pl-[42px]">
+          <div className="grid w-full max-w-[190px] grid-cols-3 gap-1.5 text-right">
+            <div>
+              <SkeletonBlock className="ml-auto h-3 w-10" />
+              <SkeletonBlock className="ml-auto mt-2 h-4 w-12" />
+            </div>
+            <div>
+              <SkeletonBlock className="ml-auto h-3 w-10" />
+              <SkeletonBlock className="ml-auto mt-2 h-4 w-14" />
+            </div>
+            <div>
+              <SkeletonBlock className="ml-auto h-3 w-10" />
+              <SkeletonBlock className="ml-auto mt-2 h-4 w-16" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <div className="rounded-2xl bg-black/30 p-3">
-          <div className="text-[11px] text-zinc-600">Stake</div>
-          <SkeletonBlock className="mt-2 h-4 w-14" />
+      <div className="hidden min-w-[640px] grid-cols-[minmax(220px,1fr)_86px_86px_104px_116px] items-center lg:grid">
+        <div className="flex items-center gap-3">
+          <SkeletonBlock className="h-9 w-9 rounded-lg" />
+          <div>
+            <SkeletonBlock className="h-4 w-28" />
+            <SkeletonBlock className="mt-2 h-3 w-12" />
+          </div>
         </div>
-
-        <div className="rounded-2xl bg-black/30 p-3">
-          <div className="text-[11px] text-zinc-600">Possible</div>
-          <SkeletonBlock className="mt-2 h-4 w-16" />
-        </div>
-
-        <div className="rounded-2xl bg-black/30 p-3">
-          <div className="text-[11px] text-zinc-600">P/L</div>
-          <SkeletonBlock className="mt-2 h-4 w-14" />
-        </div>
+        <SkeletonBlock className="h-4 w-12" />
+        <SkeletonBlock className="ml-auto h-4 w-12" />
+        <SkeletonBlock className="ml-auto h-4 w-14" />
+        <SkeletonBlock className="ml-auto h-4 w-16" />
       </div>
+    </div>
+  );
+}
 
-      <SkeletonBlock className="mt-4 h-3 w-32" />
+function PositionsTableSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/80 shadow-sm lg:overflow-x-auto">
+      <TableSectionHeaderSkeleton title="Open" showOpenRisk />
+      <TableHeaderSkeleton labels={["Team", "Status", "Odds", "Stake", "Payout"]} />
+      <PositionRowSkeleton />
+      <PositionRowSkeleton />
+
+      <TableSectionHeaderSkeleton title="Past" />
+      <TableHeaderSkeleton labels={["Team", "Status", "Odds", "Stake", "P/L"]} />
+      <PositionRowSkeleton />
+      <PositionRowSkeleton />
     </div>
   );
 }
@@ -119,8 +179,8 @@ function GoalSkeleton() {
 
 export default function LoadingAccountPage() {
   return (
-    <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
-      <div className="mx-auto mt-4 w-full max-w-6xl sm:mt-5">
+    <div className="min-h-screen bg-[#09090b] text-white">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-15 pb-32 sm:px-6 md:py-15 md:pb-24">
         <section className="rounded-[32px] bg-zinc-950/90 p-4 sm:p-5">
           <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.92fr)]">
             <TopSummarySkeleton />
@@ -128,56 +188,13 @@ export default function LoadingAccountPage() {
           </div>
         </section>
 
-        <section className="mt-3 grid h-[196px] grid-cols-2 gap-2 sm:h-[224px] sm:gap-3 lg:h-[106px] lg:grid-cols-4">
-          <MetricSkeleton label="Rule equity" />
-          <MetricSkeleton label="Open risk" />
-          <MetricSkeleton label="Max bet" />
-          <MetricSkeleton label="Account size" />
-        </section>
-
-        <section className="mt-2 grid h-[488px] gap-3 sm:mt-3 lg:h-[238px] lg:grid-cols-2">
+        <section className="mt-3 grid h-[488px] gap-3 sm:mt-3 lg:h-[238px] lg:grid-cols-2">
           <RuleSkeleton label="Daily loss room" />
           <RuleSkeleton label="Total loss room" />
         </section>
 
         <section className="mt-10">
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-[24px] font-semibold tracking-tight text-zinc-100">
-                Open positions
-              </h2>
-
-              <p className="mt-1 text-[14px] text-zinc-500">
-                Bets that are still waiting to settle.
-              </p>
-            </div>
-
-            <div className="hidden text-[13px] text-zinc-500 sm:block">
-              <SkeletonBlock className="inline-block h-4 w-28 align-middle" />
-            </div>
-          </div>
-
-          <div className="grid gap-3 lg:grid-cols-2">
-            <BetCardSkeleton />
-            <BetCardSkeleton />
-          </div>
-        </section>
-
-        <section className="mt-10">
-          <div className="mb-4">
-            <h2 className="text-[24px] font-semibold tracking-tight text-zinc-100">
-              Past positions
-            </h2>
-
-            <p className="mt-1 text-[14px] text-zinc-500">
-              Settled wins, losses, and voids.
-            </p>
-          </div>
-
-          <div className="grid gap-3 lg:grid-cols-2">
-            <BetCardSkeleton />
-            <BetCardSkeleton />
-          </div>
+          <PositionsTableSkeleton />
         </section>
 
         <section className="mt-10 min-h-[72px] rounded-[24px] bg-zinc-950/70 p-4 ring-1 ring-zinc-900">

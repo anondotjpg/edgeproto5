@@ -23,6 +23,8 @@ type BetRow = {
   settlement_reason: string | null;
   placed_at: string;
   settled_at: string | null;
+  team_logo: string | null;
+  team_logo_alt: string | null;
   polymarket_winning_outcome: string | null;
   polymarket_resolution_error: string | null;
 };
@@ -236,7 +238,7 @@ function RuleRoomCard({
         <div className="text-center">
           <div className="text-[13px] font-medium text-zinc-500">{title}</div>
 
-          <div className="mt-3 pb-1 text-[32px] font-semibold leading-[1.08] tracking-tight text-red-400">
+          <div className="mt-3 pb-1 text-[32px] font-semibold leading-[1.08] tracking-tight text-zinc-100">
             Failed
           </div>
 
@@ -257,7 +259,7 @@ function RuleRoomCard({
       : 0;
 
   const healthLabel = getHealthLabel(room, limit);
-  const healthClassName = getHealthClassName(room, limit);
+  const healthClassName = "bg-zinc-900 text-zinc-400 ring-zinc-800";
 
   return (
     <div className="h-[238px] rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
@@ -265,12 +267,7 @@ function RuleRoomCard({
         <div>
           <div className="text-[13px] font-medium text-zinc-500">{title}</div>
 
-          <div
-            className={[
-              "mt-2 pb-1 text-[30px] font-semibold leading-[1.08] tracking-tight",
-              breached ? "text-red-400" : "text-zinc-100",
-            ].join(" ")}
-          >
+          <div className="mt-2 pb-1 text-[30px] font-semibold leading-[1.08] tracking-tight text-zinc-100">
             {breached ? "Failed" : formatMoney(safeRoom)}
           </div>
 
@@ -292,10 +289,7 @@ function RuleRoomCard({
           <span>{Math.round(usedPercent)}%</span>
         </div>
 
-        <ProgressBar
-          value={usedPercent}
-          tone={breached ? "danger" : "default"}
-        />
+        <ProgressBar value={usedPercent} />
       </div>
 
       <p className="mt-4 text-[13px] leading-6 text-zinc-500">{description}</p>
@@ -327,98 +321,286 @@ function EmptyState({
   );
 }
 
-function BetCard({ bet }: { bet: BetRow }) {
-  const pnl = getBetPnl(bet);
-  const displayStatus = bet.result ?? bet.status;
-  const isOpen = bet.status === "open";
-  const isVoid = bet.status === "void" || displayStatus === "void";
 
-  const resolvedOutcome = isVoid
-    ? "Void: Account failed"
-    : bet.polymarket_winning_outcome;
+function StatusText({ status }: { status: string }) {
+  return (
+    <div className="text-sm font-medium text-zinc-400">
+      {resultLabel(status)}
+    </div>
+  );
+}
+
+function TeamLogo({ bet }: { bet: BetRow }) {
+  if (bet.team_logo) {
+    return (
+      <img
+        src={bet.team_logo}
+        alt={bet.team_logo_alt || bet.selection}
+        className="h-8 w-8 shrink-0 rounded-lg object-contain sm:h-9 sm:w-9"
+      />
+    );
+  }
+
+  return <div className="h-8 w-8 shrink-0 rounded-lg bg-zinc-900 sm:h-9 sm:w-9" />;
+}
+
+function TeamCell({ bet }: { bet: BetRow }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <TeamLogo bet={bet} />
+
+      <div className="min-w-0">
+        <div className="truncate text-sm font-semibold text-zinc-100">
+          {bet.selection}
+        </div>
+        <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+          {bet.league}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MobileBetTop({ bet }: { bet: BetRow }) {
+  return (
+    <div className="flex min-w-0 items-start gap-2.5">
+      <TeamLogo bet={bet} />
+
+      <div className="min-w-0 flex-1 pr-2">
+        <div className="truncate text-[14px] font-semibold leading-tight text-zinc-100">
+          {bet.selection}
+        </div>
+
+        <div className="mt-0.5 truncate text-[12px] font-medium leading-snug text-zinc-500">
+          {bet.league?.toUpperCase()} · {bet.market}
+        </div>
+      </div>
+
+      <div className="shrink-0 pt-px text-right text-[16px] font-semibold leading-none text-zinc-100">
+        {formatOdds(Number(bet.odds))}
+      </div>
+    </div>
+  );
+}
+
+function MobileValueGrid({
+  status,
+  stake,
+  result,
+  resultLabel,
+  resultTone = "neutral",
+}: {
+  status: string;
+  stake: string;
+  result: string;
+  resultLabel: string;
+  resultTone?: "positive" | "negative" | "neutral";
+}) {
+  return (
+    <div className="mt-2 flex justify-end pl-[42px] text-[11px] leading-none">
+      <div className="grid w-full max-w-[190px] grid-cols-3 gap-1.5 text-right">
+        <div>
+          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+            Status
+          </div>
+          <div className="mt-0.5 truncate font-semibold text-zinc-400">
+            {status}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+            Stake
+          </div>
+          <div className="mt-0.5 font-semibold text-zinc-100">{stake}</div>
+        </div>
+
+        <div>
+          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+            {resultLabel}
+          </div>
+          <div
+            className={[
+              "mt-0.5 font-semibold",
+              resultTone === "positive"
+                ? "text-green-500"
+                : resultTone === "negative"
+                  ? "text-red-400"
+                  : "text-zinc-100",
+            ].join(" ")}
+          >
+            {result}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TableSectionHeader({
+  title,
+  count,
+  rightContent,
+}: {
+  title: string;
+  count: number;
+  rightContent?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-zinc-900 bg-zinc-950 px-3 py-3.5 sm:px-5 sm:py-4 lg:min-w-[640px]">
+      <h2 className="text-base font-semibold tracking-tight text-zinc-100 sm:text-xl">
+        {title} <span className="text-zinc-500">({count})</span>
+      </h2>
+
+      {rightContent ? (
+        <div className="shrink-0 text-right text-[12px] font-medium text-zinc-500 sm:text-[13px]">
+          {rightContent}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function TableHeader({ labels }: { labels: string[] }) {
+  return (
+    <div className="hidden min-w-[640px] grid-cols-[minmax(220px,1fr)_86px_86px_104px_116px] border-b border-zinc-900 bg-black/20 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 lg:grid lg:px-5">
+      {labels.map((label, index) => (
+        <div key={label} className={index >= 2 ? "text-right" : "text-left"}>
+          {label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyTableRow({ message }: { message: string }) {
+  return (
+    <div className="border-b border-zinc-900/80 px-4 py-8 text-sm text-zinc-500 last:border-b-0 sm:px-5 lg:min-w-[640px]">
+      {message}
+    </div>
+  );
+}
+
+function ActiveBetRow({ bet }: { bet: BetRow }) {
+  const displayStatus = bet.result ?? bet.status;
 
   return (
-    <div className="min-h-[154px] rounded-[22px] bg-zinc-950/80 p-4 ring-1 ring-zinc-900">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="truncate text-[16px] font-semibold leading-[1.15] tracking-tight text-zinc-100">
-            {bet.selection}
-          </div>
+    <div className="border-b border-zinc-900/80 px-3 py-2.5 text-sm last:border-b-0 sm:px-5 sm:py-3">
+      <div className="lg:hidden">
+        <MobileBetTop bet={bet} />
+        <MobileValueGrid
+          status={resultLabel(displayStatus)}
+          stake={formatMoney(bet.stake)}
+          result={formatMoney(bet.potential_payout)}
+          resultLabel="Payout"
+        />
+      </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-zinc-500">
-            <span>{bet.league?.toUpperCase()}</span>
-            <span className="text-zinc-700">•</span>
-            <span>{bet.market}</span>
-            <span className="text-zinc-700">•</span>
-            <span>{formatOdds(bet.odds)}</span>
-          </div>
+      <div className="hidden min-w-[640px] grid-cols-[minmax(220px,1fr)_86px_86px_104px_116px] items-center lg:grid">
+        <TeamCell bet={bet} />
+
+        <StatusText status={displayStatus} />
+
+        <div className="text-right font-semibold text-zinc-100">
+          {formatOdds(Number(bet.odds))}
+        </div>
+
+        <div className="text-right font-semibold text-zinc-100">
+          {formatMoney(bet.stake)}
+        </div>
+
+        <div className="text-right font-semibold text-zinc-100">
+          {formatMoney(bet.potential_payout)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PastBetRow({ bet }: { bet: BetRow }) {
+  const pnl = getBetPnl(bet);
+  const displayStatus = bet.result ?? bet.status;
+  const pnlNumber = Number(pnl ?? 0);
+  const pnlTone =
+    pnlNumber > 0 ? "positive" : pnlNumber < 0 ? "negative" : "neutral";
+
+  return (
+    <div className="border-b border-zinc-900/80 px-3 py-2.5 text-sm last:border-b-0 sm:px-5 sm:py-3">
+      <div className="lg:hidden">
+        <MobileBetTop bet={bet} />
+        <MobileValueGrid
+          status={resultLabel(displayStatus)}
+          stake={formatMoney(bet.stake)}
+          result={pnl === null ? "—" : formatSignedMoney(pnl)}
+          resultLabel="P/L"
+          resultTone={pnlTone}
+        />
+      </div>
+
+      <div className="hidden min-w-[640px] grid-cols-[minmax(220px,1fr)_86px_86px_104px_116px] items-center lg:grid">
+        <TeamCell bet={bet} />
+
+        <StatusText status={displayStatus} />
+
+        <div className="text-right font-semibold text-zinc-100">
+          {formatOdds(Number(bet.odds))}
+        </div>
+
+        <div className="text-right font-semibold text-zinc-100">
+          {formatMoney(bet.stake)}
         </div>
 
         <div
-          className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${statusClassName(
-            displayStatus
-          )}`}
+          className={[
+            "text-right font-semibold",
+            pnlTone === "positive"
+              ? "text-green-500"
+              : pnlTone === "negative"
+                ? "text-red-400"
+                : "text-zinc-100",
+          ].join(" ")}
         >
-          {resultLabel(displayStatus)}
+          {pnl === null ? "—" : formatSignedMoney(pnl)}
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <div className="rounded-2xl bg-black/30 p-3">
-          <div className="text-[11px] text-zinc-600">Stake</div>
-          <div className="mt-1 text-[14px] font-semibold leading-[1.15] text-zinc-100">
-            {formatMoney(bet.stake)}
-          </div>
-        </div>
+function PositionsTable({
+  openBets,
+  pastBets,
+  openRisk,
+}: {
+  openBets: BetRow[];
+  pastBets: BetRow[];
+  openRisk: number;
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/80 shadow-sm lg:overflow-x-auto">
+      <TableSectionHeader
+        title="Open"
+        count={openBets.length}
+        rightContent={
+          <span>
+            Open risk <span className="font-semibold text-zinc-300">{formatMoney(openRisk)}</span>
+          </span>
+        }
+      />
+      <TableHeader labels={["Team", "Status", "Odds", "Stake", "Payout"]} />
+      {openBets.length ? (
+        openBets.map((bet) => <ActiveBetRow key={bet.id} bet={bet} />)
+      ) : (
+        <EmptyTableRow message="No open positions." />
+      )}
 
-        <div className="rounded-2xl bg-black/30 p-3">
-          <div className="text-[11px] text-zinc-600">
-            {isOpen ? "Possible" : "Payout"}
-          </div>
-          <div className="mt-1 text-[14px] font-semibold leading-[1.15] text-zinc-100">
-            {formatMoney(isOpen ? bet.potential_payout : bet.settlement_amount)}
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-black/30 p-3">
-          <div className="text-[11px] text-zinc-600">P/L</div>
-          <div
-            className={[
-              "mt-1 text-[14px] font-semibold leading-[1.15]",
-              pnl === null ? "text-zinc-100" : pnlColor(pnl),
-            ].join(" ")}
-          >
-            {pnl === null ? "—" : formatSignedMoney(pnl)}
-          </div>
-        </div>
-      </div>
-
-      {resolvedOutcome ? (
-        <div className="mt-3 rounded-2xl bg-black/30 p-3">
-          <div className="text-[11px] text-zinc-600">Resolved outcome</div>
-          <div className="mt-1 text-[13px] font-medium leading-[1.2] text-zinc-200">
-            {resolvedOutcome}
-          </div>
-        </div>
-      ) : null}
-
-      {!isVoid && bet.settlement_reason ? (
-        <div className="mt-3 rounded-2xl bg-black/30 p-3 text-[12px] leading-5 text-zinc-500">
-          {bet.settlement_reason}
-        </div>
-      ) : null}
-
-      {bet.polymarket_resolution_error && bet.status === "open" ? (
-        <div className="mt-3 rounded-2xl bg-black/30 p-3 text-[12px] leading-5 text-zinc-500">
-          {bet.polymarket_resolution_error}
-        </div>
-      ) : null}
-
-      <div className="mt-3 text-[12px] text-zinc-600">
-        {isOpen
-          ? `Placed ${formatDate(bet.placed_at)}`
-          : `Settled ${formatDate(bet.settled_at)}`}
-      </div>
+      <TableSectionHeader title="Past" count={pastBets.length} />
+      <TableHeader labels={["Team", "Status", "Odds", "Stake", "P/L"]} />
+      {pastBets.length ? (
+        pastBets.map((bet) => <PastBetRow key={bet.id} bet={bet} />)
+      ) : (
+        <EmptyTableRow message="No past positions." />
+      )}
     </div>
   );
 }
@@ -462,6 +644,8 @@ export default async function AccountPage({ params }: AccountPageProps) {
           settlement_reason,
           placed_at,
           settled_at,
+          team_logo,
+          team_logo_alt,
           polymarket_winning_outcome,
           polymarket_resolution_error
         `
@@ -543,8 +727,8 @@ export default async function AccountPage({ params }: AccountPageProps) {
   const isAccountFailed = accountStatus === "failed";
 
   return (
-    <div className="min-h-screen bg-[#09090b] px-4 pb-24 pt-6 text-white sm:px-6 md:pb-12 md:pt-10">
-      <div className="mx-auto mt-4 w-full max-w-6xl sm:mt-5">
+    <div className="min-h-screen bg-[#09090b] text-white">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-15 pb-32 sm:px-6 md:py-15 md:pb-24">
         <section className="rounded-[32px] bg-zinc-950/90 p-4 sm:p-5">
           <div className="grid items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.92fr)]">
             <div className="flex h-[142px] min-w-0 flex-col justify-between overflow-hidden lg:h-[146px]">
@@ -604,35 +788,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
           </div>
         </section>
 
-        <section className="mt-3 grid h-[196px] grid-cols-2 gap-2 sm:h-[224px] sm:gap-3 lg:h-[106px] lg:grid-cols-4">
-          <MetricCard
-            label="Rule equity"
-            value={formatMoney(ruleEquity)}
-            helper="Available + open risk"
-          />
-
-          <MetricCard
-            label="Open risk"
-            value={formatMoney(reservedRisk)}
-            helper={`${openBets.length} active position${
-              openBets.length === 1 ? "" : "s"
-            }`}
-          />
-
-          <MetricCard
-            label="Max bet"
-            value={formatMoney(maxRiskAmount)}
-            helper="Largest single stake"
-          />
-
-          <MetricCard
-            label="Account size"
-            value={formatMoney(account.plan_size)}
-            helper={plan?.sizeLabel ?? "Starting plan"}
-          />
-        </section>
-
-        <section className="mt-2 grid h-[488px] gap-3 sm:mt-3 lg:h-[238px] lg:grid-cols-2">
+        <section className="mt-3 grid h-[488px] gap-3 sm:mt-3 lg:h-[238px] lg:grid-cols-2">
           <RuleRoomCard
             title="Daily loss room"
             room={dailyRoom}
@@ -659,63 +815,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
         </section>
 
         <section className="mt-10">
-          <div className="mb-4 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-[24px] font-semibold tracking-tight text-zinc-100">
-                Open positions
-              </h2>
-
-              <p className="mt-1 text-[14px] text-zinc-500">
-                Bets that are still waiting to settle.
-              </p>
-            </div>
-          </div>
-
-          {openBets.length ? (
-            <div className="grid gap-3 lg:grid-cols-2">
-              {openBets.map((bet) => (
-                <BetCard key={bet.id} bet={bet} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No open positions"
-              description="This account has no active bets right now. New positions will appear here after a bet is placed."
-              action={
-                <Link
-                  href="/"
-                  className="inline-flex rounded-full bg-zinc-100 px-4 py-2 text-[14px] font-semibold text-zinc-950 transition-colors hover:bg-white"
-                >
-                  Browse markets
-                </Link>
-              }
-            />
-          )}
-        </section>
-
-        <section className="mt-10">
-          <div className="mb-4">
-            <h2 className="text-[24px] font-semibold tracking-tight text-zinc-100">
-              Past positions
-            </h2>
-
-            <p className="mt-1 text-[14px] text-zinc-500">
-              Settled wins, losses, and voids.
-            </p>
-          </div>
-
-          {pastBets.length ? (
-            <div className="grid gap-3 lg:grid-cols-2">
-              {pastBets.map((bet) => (
-                <BetCard key={bet.id} bet={bet} />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              title="No past positions"
-              description="Settled wins, losses, and voids for this account will appear here."
-            />
-          )}
+          <PositionsTable openBets={openBets} pastBets={pastBets} openRisk={reservedRisk} />
         </section>
 
         <section className="mt-10 min-h-[72px] rounded-[24px] bg-zinc-950/70 p-4 ring-1 ring-zinc-900">
