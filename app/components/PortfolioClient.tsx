@@ -575,9 +575,11 @@ export default function PortfolioClient() {
   return (
     <div className="mx-auto w-full max-w-7xl px-4 pt-15 pb-8 sm:px-6 md:py-15 md:pb-24">
       <div className="mb-2 sm:mb-3">
-        <h1 className="text-[34px] font-semibold tracking-tight text-zinc-100">
-          Portfolio
-        </h1>
+        <div className="flex h-[36px] max-w-full items-start overflow-hidden sm:h-[42px] lg:h-[44px]">
+          <h1 className="truncate text-[29px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[34px] lg:text-[36px]">
+            Portfolio
+          </h1>
+        </div>
       </div>
 
       {!ready || loading ? (
