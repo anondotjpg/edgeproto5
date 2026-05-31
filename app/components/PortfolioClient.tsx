@@ -107,7 +107,9 @@ function getBetPnl(bet: Bet) {
 }
 
 function SkeletonBlock({ className = "" }: { className?: string }) {
-  return <div className={`animate-pulse rounded-md bg-zinc-900 ${className}`} />;
+  return (
+    <div className={`animate-pulse rounded-md bg-zinc-900 ${className}`} />
+  );
 }
 
 function TableSectionHeader({
@@ -118,7 +120,7 @@ function TableSectionHeader({
   count: number;
 }) {
   return (
-    <div className="border-b border-zinc-900 bg-zinc-950 px-3 py-3.5 sm:px-5 sm:py-4 lg:min-w-[760px]">
+    <div className="border-b border-zinc-900 bg-zinc-950 px-3 py-3.5 sm:px-5 sm:py-4 lg:min-w-[560px] xl:min-w-[760px]">
       <h2 className="text-base font-semibold tracking-tight text-zinc-100 sm:text-xl">
         {title} <span className="text-zinc-500">({count})</span>
       </h2>
@@ -169,7 +171,9 @@ function TeamLogo({ bet }: { bet: Bet }) {
     );
   }
 
-  return <div className="h-8 w-8 shrink-0 rounded-lg bg-zinc-900 sm:h-9 sm:w-9" />;
+  return (
+    <div className="h-8 w-8 shrink-0 rounded-lg bg-zinc-900 sm:h-9 sm:w-9" />
+  );
 }
 
 function TeamCell({ bet }: { bet: Bet }) {
@@ -181,7 +185,14 @@ function TeamCell({ bet }: { bet: Bet }) {
         <div className="truncate text-sm font-semibold text-zinc-100">
           {bet.selection}
         </div>
-        <div className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+        <Link
+          href={`/accounts/${bet.account_id}`}
+          className="mt-1 block truncate text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 transition-colors hover:text-zinc-400 xl:hidden"
+        >
+          {getAccountLabel(bet)}
+        </Link>
+
+        <div className="mt-1 hidden text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 xl:block">
           {bet.league}
         </div>
       </div>
@@ -216,9 +227,15 @@ function MobileBetTop({ bet }: { bet: Bet }) {
 
 function TableHeader({ labels }: { labels: string[] }) {
   return (
-    <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] border-b border-zinc-900 bg-black/20 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 lg:grid lg:px-5">
+    <div className="hidden min-w-[560px] grid-cols-[minmax(210px,1.45fr)_72px_72px_86px_104px] xl:min-w-[760px] xl:grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] border-b border-zinc-900 bg-black/20 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 lg:grid lg:px-5">
       {labels.map((label, index) => (
-        <div key={label} className={index >= 3 ? "text-right" : "text-left"}>
+        <div
+          key={label}
+          className={[
+            label === "Account" ? "hidden xl:block" : "",
+            index >= 3 ? "text-right" : "text-left",
+          ].join(" ")}
+        >
           {label}
         </div>
       ))}
@@ -257,7 +274,7 @@ function SkeletonRow() {
         </div>
       </div>
 
-      <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center lg:grid">
+      <div className="hidden min-w-[560px] grid-cols-[minmax(210px,1.45fr)_72px_72px_86px_104px] xl:min-w-[760px] xl:grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center lg:grid">
         <div className="flex items-center gap-3">
           <SkeletonBlock className="h-9 w-9 rounded-lg" />
           <div>
@@ -265,7 +282,7 @@ function SkeletonRow() {
             <SkeletonBlock className="mt-2 h-3 w-12" />
           </div>
         </div>
-        <SkeletonBlock className="h-4 w-24" />
+        <SkeletonBlock className="hidden h-4 w-24 xl:block" />
         <SkeletonBlock className="h-4 w-12" />
         <SkeletonBlock className="ml-auto h-4 w-12" />
         <SkeletonBlock className="ml-auto h-4 w-14" />
@@ -344,12 +361,12 @@ function ActiveBetRow({ bet }: { bet: Bet }) {
         />
       </div>
 
-      <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center lg:grid">
+      <div className="hidden min-w-[560px] grid-cols-[minmax(210px,1.45fr)_72px_72px_86px_104px] xl:min-w-[760px] xl:grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center lg:grid">
         <TeamCell bet={bet} />
 
         <Link
           href={`/accounts/${bet.account_id}`}
-          className="truncate font-medium text-zinc-300 transition-colors hover:text-white"
+          className="hidden truncate font-medium text-zinc-300 transition-colors hover:text-white xl:block"
         >
           {getAccountLabel(bet)}
         </Link>
@@ -392,12 +409,12 @@ function PastBetRow({ bet }: { bet: Bet }) {
         />
       </div>
 
-      <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center lg:grid">
+      <div className="hidden min-w-[560px] grid-cols-[minmax(210px,1.45fr)_72px_72px_86px_104px] xl:min-w-[760px] xl:grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center lg:grid">
         <TeamCell bet={bet} />
 
         <Link
           href={`/accounts/${bet.account_id}`}
-          className="truncate font-medium text-zinc-300 transition-colors hover:text-white"
+          className="hidden truncate font-medium text-zinc-300 transition-colors hover:text-white xl:block"
         >
           {getAccountLabel(bet)}
         </Link>
@@ -431,7 +448,7 @@ function PastBetRow({ bet }: { bet: Bet }) {
 
 function EmptyTableRow({ message }: { message: string }) {
   return (
-    <div className="border-b border-zinc-900/80 px-4 py-8 text-sm text-zinc-500 last:border-b-0 sm:px-5 lg:min-w-[760px]">
+    <div className="border-b border-zinc-900/80 px-4 py-8 text-sm text-zinc-500 last:border-b-0 sm:px-5 lg:min-w-[560px] xl:min-w-[760px]">
       {message}
     </div>
   );
@@ -540,7 +557,9 @@ export default function PortfolioClient() {
       setPastBets(data.pastBets ?? []);
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Unable to load portfolio.");
+      setError(
+        err instanceof Error ? err.message : "Unable to load portfolio.",
+      );
     } finally {
       if (!options?.silent) {
         setLoading(false);
