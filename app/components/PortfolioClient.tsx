@@ -118,7 +118,7 @@ function TableSectionHeader({
   count: number;
 }) {
   return (
-    <div className="border-b border-zinc-900 bg-zinc-950 px-3 py-3.5 sm:px-5 sm:py-4">
+    <div className="border-b border-zinc-900 bg-zinc-950 px-3 py-3.5 sm:px-5 sm:py-4 md:min-w-[760px]">
       <h2 className="text-base font-semibold tracking-tight text-zinc-100 sm:text-xl">
         {title} <span className="text-zinc-500">({count})</span>
       </h2>
@@ -216,7 +216,7 @@ function MobileBetTop({ bet }: { bet: Bet }) {
 
 function TableHeader({ labels }: { labels: string[] }) {
   return (
-    <div className="hidden grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] border-b border-zinc-900 bg-black/20 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 md:grid md:px-5">
+    <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] border-b border-zinc-900 bg-black/20 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-600 md:grid md:px-5">
       {labels.map((label, index) => (
         <div key={label} className={index >= 3 ? "text-right" : "text-left"}>
           {label}
@@ -257,7 +257,7 @@ function SkeletonRow() {
         </div>
       </div>
 
-      <div className="hidden grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center md:grid">
+      <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center md:grid">
         <div className="flex items-center gap-3">
           <SkeletonBlock className="h-9 w-9 rounded-lg" />
           <div>
@@ -344,7 +344,7 @@ function ActiveBetRow({ bet }: { bet: Bet }) {
         />
       </div>
 
-      <div className="hidden grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center md:grid">
+      <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center md:grid">
         <TeamCell bet={bet} />
 
         <Link
@@ -392,7 +392,7 @@ function PastBetRow({ bet }: { bet: Bet }) {
         />
       </div>
 
-      <div className="hidden grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center md:grid">
+      <div className="hidden min-w-[760px] grid-cols-[minmax(210px,1.45fr)_minmax(105px,0.75fr)_72px_72px_86px_104px] items-center md:grid">
         <TeamCell bet={bet} />
 
         <Link
@@ -431,7 +431,7 @@ function PastBetRow({ bet }: { bet: Bet }) {
 
 function EmptyTableRow({ message }: { message: string }) {
   return (
-    <div className="border-b border-zinc-900/80 px-4 py-8 text-sm text-zinc-500 last:border-b-0 sm:px-5">
+    <div className="border-b border-zinc-900/80 px-4 py-8 text-sm text-zinc-500 last:border-b-0 sm:px-5 md:min-w-[760px]">
       {message}
     </div>
   );
@@ -439,7 +439,7 @@ function EmptyTableRow({ message }: { message: string }) {
 
 function PortfolioSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/80">
+    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/80 md:overflow-x-auto">
       <TableSectionHeader title="Active" count={0} />
       <TableHeader
         labels={["Team", "Account", "Status", "Odds", "Stake", "Payout"]}
@@ -467,7 +467,7 @@ function PortfolioTable({
   pastBets: Bet[];
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/80 shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/80 shadow-sm md:overflow-x-auto">
       <TableSectionHeader title="Active" count={openBets.length} />
       <TableHeader
         labels={["Team", "Account", "Status", "Odds", "Stake", "Payout"]}
