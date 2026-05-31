@@ -329,7 +329,7 @@ const BetSlipHeader = memo(function BetSlipHeader({
           />
         ) : null}
 
-        <div className="min-w-0 flex-1 -mt-1">
+        <div className="min-w-0 flex-1">
           <h2
             className={[
               "truncate font-semibold tracking-tight text-zinc-100",
@@ -345,7 +345,7 @@ const BetSlipHeader = memo(function BetSlipHeader({
 
           <p
             className={[
-              "mt-[2px] line-clamp-2 text-zinc-400",
+              "mt-1 truncate text-zinc-400",
               panelMode === "sidebar"
                 ? "text-[13px] leading-[1.2]"
                 : mobileLayout
