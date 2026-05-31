@@ -424,7 +424,7 @@ export default function OwnedAccountsSection() {
                           {displayName}
                         </div>
 
-                        <div className="shrink-0 rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.12em] text-zinc-500">
+                        <div className="shrink-0 rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-medium tracking-[0.12em] text-zinc-500">
                           {getStatusLabel(account.status)}
                         </div>
                       </div>
