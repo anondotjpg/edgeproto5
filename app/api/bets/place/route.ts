@@ -20,6 +20,8 @@ type PlaceBetBody = {
   polymarketOutcome?: string | null;
   polymarketOutcomeIndex?: number | null;
   polymarketTokenId?: string | null;
+  teamLogo?: string | null;
+  teamLogoAlt?: string | null;
 };
 
 function cleanText(value: unknown) {
@@ -106,6 +108,8 @@ export async function POST(req: Request) {
     const polymarketOutcome = cleanText(body.polymarketOutcome);
     const polymarketOutcomeIndex = cleanInteger(body.polymarketOutcomeIndex);
     const polymarketTokenId = cleanText(body.polymarketTokenId);
+    const teamLogo = cleanText(body.teamLogo);
+    const teamLogoAlt = cleanText(body.teamLogoAlt);
 
     if (!accountIds.length) {
       return NextResponse.json(
@@ -183,6 +187,8 @@ export async function POST(req: Request) {
           p_polymarket_outcome: polymarketOutcome,
           p_polymarket_outcome_index: polymarketOutcomeIndex,
           p_polymarket_token_id: polymarketTokenId,
+          p_team_logo: teamLogo,
+          p_team_logo_alt: teamLogoAlt,
         }
       );
 

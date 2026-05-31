@@ -1455,6 +1455,9 @@ export function BetSlipPanel({
           polymarketOutcome: currentBet.polymarketOutcome ?? currentBet.team,
           polymarketOutcomeIndex: currentBet.polymarketOutcomeIndex,
           polymarketTokenId: currentBet.polymarketTokenId,
+
+          teamLogo: currentBet.teamLogo ?? null,
+          teamLogoAlt: currentBet.teamLogoAlt ?? currentBet.team,
         }),
       });
 

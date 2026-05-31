@@ -52,6 +52,8 @@ export async function GET() {
       settlement_amount,
       placed_at,
       settled_at,
+      team_logo,
+      team_logo_alt,
 
       polymarket_condition_id,
       polymarket_token_id,
