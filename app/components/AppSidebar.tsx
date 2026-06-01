@@ -69,7 +69,7 @@ export default function AppSidebar() {
                 <span
                   className={
                     isActive
-                      ? "rounded-md text-[15px] font-semibold text-zinc-100"
+                      ? "rounded-md text-[15px] font-medium text-zinc-100"
                       : "rounded-md text-[15px] font-medium text-zinc-500"
                   }
                 >
