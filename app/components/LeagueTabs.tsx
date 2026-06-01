@@ -53,7 +53,7 @@ export default function LeagueTabs({
                     href={`/?league=${item.league}`}
                     onClick={() => setOpen(false)}
                     className={[
-                      "flex h-10 items-center rounded-xl px-3 text-[13px] font-medium transition-colors active:bg-zinc-800",
+                      "flex h-10 items-center rounded-xl px-3 text-[13px] font-bold transition-colors active:bg-zinc-800",
                       isActive
                         ? "bg-zinc-800 text-zinc-100"
                         : "text-zinc-500 hover:bg-zinc-900/70 hover:text-zinc-200",
