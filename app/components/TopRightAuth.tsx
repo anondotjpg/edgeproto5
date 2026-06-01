@@ -4,18 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { FiLogOut, FiUser } from "react-icons/fi";
 
 export default function TopRightAuth() {
   const { ready, authenticated, login, logout } = usePrivy();
   const [menuOpen, setMenuOpen] = useState(false);
   const [pfpLoaded, setPfpLoaded] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setMenuOpen(false);
-      }
+      if (event.key === "Escape") setMenuOpen(false);
     }
 
     function handleDesktopPointerDown(event: MouseEvent) {
@@ -32,8 +32,23 @@ export default function TopRightAuth() {
     return () => {
       document.removeEventListener("keydown", handleEscape);
       document.removeEventListener("mousedown", handleDesktopPointerDown);
+      if (closeTimer.current) clearTimeout(closeTimer.current);
     };
   }, []);
+
+  const openMenu = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+    if (window.innerWidth >= 768) setMenuOpen(true);
+  };
+
+  const scheduleClose = () => {
+    if (window.innerWidth < 768) return;
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setMenuOpen(false), 120);
+  };
 
   const flatPillClassName =
     "inline-flex h-9 items-center rounded-full border border-zinc-800 px-4 text-[13px] font-bold whitespace-nowrap";
@@ -51,7 +66,12 @@ export default function TopRightAuth() {
         <span className="relative z-10">Start Challenge</span>
       </Link>
 
-      <div ref={menuRef} className="relative flex shrink-0 items-center">
+      <div
+        ref={menuRef}
+        onMouseEnter={openMenu}
+        onMouseLeave={scheduleClose}
+        className="relative flex shrink-0 items-center"
+      >
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
@@ -82,25 +102,29 @@ export default function TopRightAuth() {
         </button>
 
         {menuOpen ? (
-          <div className="absolute right-0 top-[calc(100%+10px)] z-[220] hidden min-w-[160px] whitespace-nowrap rounded-2xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md md:block">
-            <Link
-              href="/accounts"
-              onClick={() => setMenuOpen(false)}
-              className="block cursor-pointer rounded-xl px-3 py-2.5 text-[13px] font-medium text-zinc-200 transition-colors hover:bg-zinc-800 active:bg-zinc-800"
-            >
-              Accounts
-            </Link>
+          <div className="absolute right-0 top-full z-[220] hidden pt-[10px] md:block">
+            <div className="min-w-[168px] whitespace-nowrap rounded-2xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md">
+              <Link
+                href="/accounts"
+                onClick={() => setMenuOpen(false)}
+                className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-zinc-200 transition-colors hover:bg-zinc-800 active:bg-zinc-800"
+              >
+                <FiUser className="h-4 w-4 text-zinc-500" />
+                <span>Accounts</span>
+              </Link>
 
-            <button
-              type="button"
-              onClick={() => {
-                setMenuOpen(false);
-                logout();
-              }}
-              className="block w-full cursor-pointer rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-zinc-200 transition-colors hover:bg-zinc-800 active:bg-zinc-800 whitespace-nowrap"
-            >
-              Sign out
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  logout();
+                }}
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-zinc-200 transition-colors hover:bg-zinc-800 active:bg-zinc-800 whitespace-nowrap"
+              >
+                <FiLogOut className="h-4 w-4 text-zinc-500" />
+                <span>Sign out</span>
+              </button>
+            </div>
           </div>
         ) : null}
       </div>
@@ -135,9 +159,7 @@ export default function TopRightAuth() {
       </div>
 
       <div className="pointer-events-none fixed top-4 right-6 z-50 hidden md:block">
-        <div className="pointer-events-auto flex items-center gap-3">
-          {cta}
-        </div>
+        <div className="pointer-events-auto flex items-center gap-3">{cta}</div>
       </div>
 
       {authenticated && menuOpen ? (
@@ -149,13 +171,14 @@ export default function TopRightAuth() {
             className="fixed inset-0 z-[200] bg-transparent md:hidden"
           />
 
-          <div className="fixed right-4 top-[72px] z-[210] min-w-[160px] whitespace-nowrap rounded-2xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md md:hidden">
+          <div className="fixed right-4 top-[72px] z-[210] min-w-[168px] whitespace-nowrap rounded-2xl border border-zinc-800 bg-[#09090b]/95 p-1.5 shadow-2xl backdrop-blur-md md:hidden">
             <Link
               href="/accounts"
               onClick={() => setMenuOpen(false)}
-              className="block cursor-pointer rounded-xl px-3 py-2.5 text-[13px] font-medium text-zinc-200 transition-colors active:bg-zinc-800"
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-zinc-200 transition-colors active:bg-zinc-800"
             >
-              Accounts
+              <FiUser className="h-4 w-4 text-zinc-500" />
+              <span>Accounts</span>
             </Link>
 
             <button
@@ -164,9 +187,10 @@ export default function TopRightAuth() {
                 setMenuOpen(false);
                 logout();
               }}
-              className="block w-full cursor-pointer rounded-xl px-3 py-2.5 text-left text-[13px] font-medium text-zinc-200 transition-colors active:bg-zinc-800 whitespace-nowrap"
+              className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-semibold text-zinc-200 transition-colors active:bg-zinc-800 whitespace-nowrap"
             >
-              Sign out
+              <FiLogOut className="h-4 w-4 text-zinc-500" />
+              <span>Sign out</span>
             </button>
           </div>
         </>
