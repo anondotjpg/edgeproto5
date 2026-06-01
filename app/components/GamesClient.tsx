@@ -318,7 +318,7 @@ function GameCard({
     selectedBet?.gameId === game.id && selectedBet.team === game.home_team;
 
   return (
-    <article className="relative md:rounded-xl bg-zinc-900/20 p-2 md:p-3">
+    <article className="relative rounded-md md:rounded-xl bg-zinc-900/20 p-2 md:p-3">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="inline-flex h-7 items-center rounded-xl bg-zinc-900 px-3 text-[11px] font-medium text-zinc-100">
           {formatGameTime(game.commence_time)}
