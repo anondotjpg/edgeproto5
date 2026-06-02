@@ -2,6 +2,7 @@ export const LEAGUES = [
   { key: "nba", label: "NBA", tag: 745, teamLeague: "nba" },
   { key: "nhl", label: "NHL", tag: 899, teamLeague: "nhl" },
   { key: "mlb", label: "MLB", tag: 100381, teamLeague: "mlb" },
+  { key: "wnba", label: "WNBA", tag: 100639, teamLeague: "wnba" },
 ] as const;
 
 export type LeagueKey = (typeof LEAGUES)[number]["key"];
