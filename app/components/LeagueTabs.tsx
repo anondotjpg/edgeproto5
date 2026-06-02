@@ -26,7 +26,7 @@ export default function LeagueTabs({
 
   return (
     <>
-      <div className="pointer-events-none absolute left-0 top-0 z-30 md:hidden">
+      <div className="pointer-events-none absolute left-0 top-0 z-30 lg:hidden">
         <div className="pointer-events-auto px-4 py-5">
           <button
             type="button"
@@ -68,7 +68,7 @@ export default function LeagueTabs({
         </div>
       </div>
 
-      <div className="no-scrollbar relative z-20 hidden w-min items-center gap-4 overflow-x-auto rounded-lg md:flex md:gap-2 md:bg-zinc-900/70">
+      <div className="no-scrollbar relative z-20 hidden w-min items-center gap-4 overflow-x-auto rounded-lg lg:flex lg:gap-2 lg:bg-zinc-900/70">
         {leagues.map((item) => {
           const isActive = item.league === selectedLeague;
 
