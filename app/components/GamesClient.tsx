@@ -569,7 +569,7 @@ export default function GamesClient({
               ) : (
                 <div className="grid gap-7">
                   {groupedGames.map((group) => (
-                    <div key={group.key} className="grid gap-2">
+                    <div key={group.key} className="grid gap-4 xl:gap-2">
                       <DateMarketHeader date={group.date} />
 
                       <div className="grid gap-5 md:gap-3">
