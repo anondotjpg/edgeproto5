@@ -68,7 +68,7 @@ export default function LeagueTabs({
         </div>
       </div>
 
-      <div className="no-scrollbar relative z-20 hidden w-min items-center gap-4 overflow-x-auto rounded-lg sm:flex sm:gap-2 sm:bg-zinc-900/50">
+      <div className="no-scrollbar relative z-20 hidden w-min items-center gap-4 overflow-x-auto rounded-lg sm:flex sm:gap-2 sm:bg-zinc-900/70">
         {leagues.map((item) => {
           const isActive = item.league === selectedLeague;
 
