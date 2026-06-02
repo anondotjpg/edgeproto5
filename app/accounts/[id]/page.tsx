@@ -224,9 +224,9 @@ function GoalProgressBar({ value }: { value: number }) {
   };
 
   return (
-    <div className="flex h-10 w-full items-center sm:h-11">
+    <div className="flex h-8 w-full items-center sm:h-9">
       <div
-        className="grid h-7 w-full items-stretch gap-1.5 sm:h-[31px]"
+        className="grid h-6 w-full items-stretch gap-1.5 sm:h-7"
         style={{ gridTemplateColumns: `repeat(${barCount}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: barCount }).map((_, index) => {
@@ -277,9 +277,9 @@ function LossRuleProgressBar({ value }: { value: number }) {
   };
 
   return (
-    <div className="flex h-10 w-full items-center sm:h-11">
+    <div className="flex h-8 w-full items-center sm:h-9">
       <div
-        className="grid h-7 w-full items-stretch gap-1.5 sm:h-[31px]"
+        className="grid h-6 w-full items-stretch gap-1.5 sm:h-7"
         style={{ gridTemplateColumns: `repeat(${barCount}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: barCount }).map((_, index) => {
@@ -352,17 +352,17 @@ function RuleRoomCard({
 }) {
   if (isAccountFailed) {
     return (
-      <div className="flex h-[158px] items-center justify-center rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
+      <div className="flex min-h-[166px] items-center justify-center rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900">
         <div className="text-center">
-          <div className="text-[17px] font-medium leading-none text-zinc-500">
+          <div className="text-[17px] font-medium leading-tight text-zinc-500">
             {title}
           </div>
 
-          <div className="mt-2 pb-1 text-[28px] font-semibold leading-[1.08] tracking-tight text-zinc-100">
+          <div className="mt-2 min-h-[34px] text-[28px] font-semibold leading-tight tracking-tight text-zinc-100">
             Failed
           </div>
 
-          <div className="mt-1 text-[13px] leading-none text-zinc-500">
+          <div className="mt-1 text-[13px] leading-tight text-zinc-500">
             Loss limit breached
           </div>
         </div>
@@ -381,18 +381,18 @@ function RuleRoomCard({
   const healthLabel = getHealthLabel(room, limit);
 
   return (
-    <div className="flex h-[158px] flex-col rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
+    <div className="flex min-h-[166px] flex-col rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-[17px] font-medium leading-none text-zinc-500">
+          <div className="text-[17px] font-medium leading-tight text-zinc-500">
             {title}
           </div>
 
-          <div className="mt-2 truncate pb-1 text-[26px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[28px]">
+          <div className="mt-2 min-h-[34px] truncate text-[26px] font-semibold leading-tight tracking-tight text-zinc-100 sm:text-[28px]">
             {breached ? "Failed" : formatMoney(safeRoom)}
           </div>
 
-          <div className="mt-1 truncate text-[13px] leading-none text-zinc-500">
+          <div className="mt-1 truncate text-[13px] leading-tight text-zinc-500">
             {breached ? "limit breached" : "amount before fail"}
           </div>
         </div>
@@ -400,7 +400,7 @@ function RuleRoomCard({
         <div className={COMPACT_BADGE_CLASS}>{healthLabel}</div>
       </div>
 
-      <div className="mt-auto pt-3">
+      <div className="mt-auto pt-2">
         <LossRuleProgressBar value={usedPercent} />
       </div>
     </div>
@@ -869,7 +869,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
       <div className="mx-auto w-full max-w-7xl px-4 pt-15 pb-32 sm:px-6 md:py-15 md:pb-24">
         <section>
           <div className="grid items-stretch gap-3 lg:grid-cols-2">
-            <div className="flex h-[142px] min-w-0 flex-col justify-between overflow-hidden lg:h-[158px]">
+            <div className="flex min-h-[142px] min-w-0 flex-col justify-between overflow-visible lg:min-h-[166px]">
               <div className="min-w-0">
                 <div className="flex h-[36px] max-w-full items-start overflow-hidden sm:h-[42px] lg:h-[44px]">
                   <h1 className="truncate text-[29px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[34px] lg:text-[36px]">
@@ -896,30 +896,30 @@ export default async function AccountPage({ params }: AccountPageProps) {
                   </div>
                 </div>
 
-                <div className="mt-1 truncate text-[13px] font-medium leading-none text-zinc-500">
+                <div className="mt-1 truncate text-[13px] font-medium leading-tight text-zinc-500">
                   {formatMoney(currentBalance)} available
                 </div>
               </div>
             </div>
 
-            <div className="flex h-[158px] flex-col rounded-[26px] bg-zinc-950/80 p-5 ring-1 ring-zinc-900">
+            <div className="flex min-h-[166px] flex-col rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="text-[17px] font-medium leading-none text-zinc-500">
+                  <div className="text-[17px] font-medium leading-tight text-zinc-500">
                     Goal
                   </div>
 
-                  <div className="mt-2 truncate pb-1 text-[26px] font-semibold leading-[1.08] tracking-tight text-zinc-100 sm:text-[28px]">
+                  <div className="mt-2 min-h-[34px] truncate text-[26px] font-semibold leading-tight tracking-tight text-zinc-100 sm:text-[28px]">
                     {formatMoney(ruleEquity)}
                   </div>
 
-                  <div className="mt-1 truncate text-[13px] font-medium leading-none text-zinc-500">
+                  <div className="mt-1 truncate text-[13px] font-medium leading-tight text-zinc-500">
                     of {formatMoney(profitTargetBalance)} goal
                   </div>
                 </div>
               </div>
 
-              <div className="mt-auto pt-3">
+              <div className="mt-auto pt-2">
                 <GoalProgressBar value={goalProgress} />
               </div>
             </div>
