@@ -206,19 +206,19 @@ function MobileBetTop({ bet }: { bet: Bet }) {
       <TeamLogo bet={bet} />
 
       <div className="min-w-0 flex-1 pr-2">
-        <div className="truncate text-[14px] font-semibold leading-tight text-zinc-100">
+        <div className="h-4 truncate text-[14px] font-semibold leading-4 text-zinc-100">
           {bet.selection}
         </div>
 
         <Link
           href={`/accounts/${bet.account_id}`}
-          className="mt-0.5 block truncate text-[12px] font-medium leading-snug text-zinc-500 transition-colors hover:text-zinc-300"
+          className="mt-1.5 block h-3 truncate text-[11px] font-medium leading-3 text-zinc-500 transition-colors hover:text-zinc-300"
         >
           {getAccountLabel(bet)}
         </Link>
       </div>
 
-      <div className="shrink-0 pt-px text-right text-[16px] font-semibold leading-none text-zinc-100">
+      <div className="mt-px h-4 shrink-0 text-right text-[16px] font-semibold leading-4 text-zinc-100">
         {formatOdds(Number(bet.odds))}
       </div>
     </div>
@@ -306,31 +306,33 @@ function MobileValueGrid({
   resultTone?: "positive" | "negative" | "neutral";
 }) {
   return (
-    <div className="mt-2 flex justify-end pl-[42px] text-[11px] leading-none">
+    <div className="mt-2 flex justify-end pl-[42px]">
       <div className="grid w-full max-w-[190px] grid-cols-3 gap-1.5 text-right">
         <div>
-          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+          <div className="ml-auto h-3 truncate text-[10px] font-medium uppercase leading-3 tracking-[0.14em] text-zinc-600">
             Status
           </div>
-          <div className="mt-0.5 truncate font-semibold text-zinc-400">
+          <div className="ml-auto mt-2 h-4 truncate text-[11px] font-semibold leading-4 text-zinc-400">
             {status}
           </div>
         </div>
 
         <div>
-          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+          <div className="ml-auto h-3 truncate text-[10px] font-medium uppercase leading-3 tracking-[0.14em] text-zinc-600">
             Stake
           </div>
-          <div className="mt-0.5 font-semibold text-zinc-100">{stake}</div>
+          <div className="ml-auto mt-2 h-4 truncate text-[11px] font-semibold leading-4 text-zinc-100">
+            {stake}
+          </div>
         </div>
 
         <div>
-          <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+          <div className="ml-auto h-3 truncate text-[10px] font-medium uppercase leading-3 tracking-[0.14em] text-zinc-600">
             {resultLabel}
           </div>
           <div
             className={[
-              "mt-0.5 font-semibold",
+              "ml-auto mt-2 h-4 truncate text-[11px] font-semibold leading-4",
               resultTone === "positive"
                 ? "text-green-400"
                 : resultTone === "negative"
