@@ -857,7 +857,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-17 pb-32 sm:px-6 md:py-15 md:pb-24">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-20 pb-32 sm:px-6 md:py-15 md:pb-24">
         <section>
           <div className="grid items-stretch gap-3 lg:grid-cols-2">
             <div className="flex min-h-[142px] min-w-0 flex-col justify-between overflow-visible lg:min-h-[166px]">
