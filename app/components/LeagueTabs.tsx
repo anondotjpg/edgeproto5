@@ -31,7 +31,7 @@ export default function LeagueTabs({
           <button
             type="button"
             onClick={() => setOpen((current) => !current)}
-            className="flex h-9 min-w-[132px] items-center justify-between gap-3 rounded-full bg-zinc-900/90 px-4 text-[13px] font-bold text-zinc-100 outline-none backdrop-blur transition-colors active:bg-zinc-800 focus:outline-none focus-visible:outline-none"
+            className="flex h-9 min-w-[132px] items-center justify-between gap-3 rounded-full bg-zinc-900/90 px-4 text-[13px] font-bold text-zinc-100 outline-none backdrop-blur transition-colors focus:outline-none focus-visible:outline-none"
           >
             <span>{selectedItem?.label ?? "League"}</span>
             <FiChevronDown

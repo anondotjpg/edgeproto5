@@ -478,12 +478,12 @@ function TeamLogo({ bet }: { bet: BetRow }) {
       <img
         src={bet.team_logo}
         alt={bet.team_logo_alt || bet.selection}
-        className="h-9 w-9 shrink-0 rounded-lg object-contain"
+        className="h-11 w-11 shrink-0 rounded-lg object-contain lg:h-9 lg:w-9"
       />
     );
   }
 
-  return <div className="h-9 w-9 shrink-0 rounded-lg bg-zinc-900" />;
+  return <div className="h-11 w-11 shrink-0 rounded-lg bg-zinc-900 lg:h-9 lg:w-9" />;
 }
 
 function TeamCell({ bet }: { bet: BetRow }) {
@@ -505,20 +505,20 @@ function TeamCell({ bet }: { bet: BetRow }) {
 
 function MobileBetTop({ bet }: { bet: BetRow }) {
   return (
-    <div className="flex min-w-0 items-start gap-3">
+    <div className="flex min-w-0 items-start gap-3.5">
       <TeamLogo bet={bet} />
 
       <div className="min-w-0 flex-1 pr-2">
-        <div className="h-5 truncate text-[15px] font-semibold leading-5 text-zinc-100">
+        <div className="h-6 truncate text-[17px] font-semibold leading-6 text-zinc-100">
           {bet.selection}
         </div>
 
-        <div className="mt-1.5 h-4 truncate text-[12px] font-medium leading-4 text-zinc-500">
+        <div className="mt-1 h-5 truncate text-[13px] font-medium leading-5 text-zinc-500">
           {bet.league?.toUpperCase()} · {bet.market}
         </div>
       </div>
 
-      <div className="mt-0 h-5 shrink-0 text-right text-[18px] font-semibold leading-5 text-zinc-100">
+      <div className="mt-0.5 h-6 shrink-0 text-right text-[20px] font-semibold leading-6 text-zinc-100">
         {formatOdds(Number(bet.odds))}
       </div>
     </div>
@@ -539,33 +539,33 @@ function MobileValueGrid({
   resultTone?: "positive" | "negative" | "neutral";
 }) {
   return (
-    <div className="mt-2.5 flex justify-end pl-[48px] text-[11px] leading-none">
-      <div className="grid w-full max-w-[225px] grid-cols-3 gap-2 text-right">
+    <div className="mt-3 flex justify-end pl-[58px]">
+      <div className="grid w-full max-w-[250px] grid-cols-3 gap-2.5 text-right">
         <div>
-          <div className="h-3 text-[10px] font-medium uppercase leading-3 tracking-[0.14em] text-zinc-600">
+          <div className="h-3.5 truncate text-[11px] font-medium uppercase leading-[14px] tracking-[0.14em] text-zinc-600">
             Status
           </div>
-          <div className="mt-2 h-5 truncate text-[13px] font-semibold leading-5 text-zinc-400">
+          <div className="mt-2 h-6 truncate text-[15px] font-semibold leading-6 text-zinc-400">
             {status}
           </div>
         </div>
 
         <div>
-          <div className="h-3 text-[10px] font-medium uppercase leading-3 tracking-[0.14em] text-zinc-600">
+          <div className="h-3.5 truncate text-[11px] font-medium uppercase leading-[14px] tracking-[0.14em] text-zinc-600">
             Stake
           </div>
-          <div className="mt-2 h-5 truncate text-[13px] font-semibold leading-5 text-zinc-100">
+          <div className="mt-2 h-6 truncate text-[15px] font-semibold leading-6 text-zinc-100">
             {stake}
           </div>
         </div>
 
         <div>
-          <div className="h-3 text-[10px] font-medium uppercase leading-3 tracking-[0.14em] text-zinc-600">
+          <div className="h-3.5 truncate text-[11px] font-medium uppercase leading-[14px] tracking-[0.14em] text-zinc-600">
             {resultLabel}
           </div>
           <div
             className={[
-              "mt-2 h-5 truncate text-[13px] font-semibold leading-5",
+              "mt-2 h-6 truncate text-[15px] font-semibold leading-6",
               resultTone === "positive"
                 ? "text-green-500"
                 : resultTone === "negative"
@@ -579,6 +579,21 @@ function MobileValueGrid({
       </div>
     </div>
   );
+}
+
+function getBetRowClassName(index: number) {
+  const tint =
+    index % 3 === 0
+      ? "bg-zinc-950/80"
+      : index % 3 === 1
+        ? "bg-zinc-900/35"
+        : "bg-zinc-900/20";
+
+  return [
+    "border-b border-zinc-900/80 px-3 py-4 text-sm last:border-b-0 sm:px-5 sm:py-3.5 lg:py-3",
+    "transition-colors hover:bg-zinc-900/55",
+    tint,
+  ].join(" ");
 }
 
 function TableSectionHeader({
@@ -644,11 +659,11 @@ function EmptyOpenPositionsRow() {
   );
 }
 
-function ActiveBetRow({ bet }: { bet: BetRow }) {
+function ActiveBetRow({ bet, index }: { bet: BetRow; index: number }) {
   const displayStatus = bet.result ?? bet.status;
 
   return (
-    <div className="border-b border-zinc-900/80 px-3 py-3 text-sm last:border-b-0 sm:px-5">
+    <div className={getBetRowClassName(index)}>
       <div className="lg:hidden">
         <MobileBetTop bet={bet} />
         <MobileValueGrid
@@ -680,7 +695,7 @@ function ActiveBetRow({ bet }: { bet: BetRow }) {
   );
 }
 
-function PastBetRow({ bet }: { bet: BetRow }) {
+function PastBetRow({ bet, index }: { bet: BetRow; index: number }) {
   const pnl = getBetPnl(bet);
   const displayStatus = bet.result ?? bet.status;
   const pnlNumber = Number(pnl ?? 0);
@@ -688,7 +703,7 @@ function PastBetRow({ bet }: { bet: BetRow }) {
     pnlNumber > 0 ? "positive" : pnlNumber < 0 ? "negative" : "neutral";
 
   return (
-    <div className="border-b border-zinc-900/80 px-3 py-3 text-sm last:border-b-0 sm:px-5">
+    <div className={getBetRowClassName(index)}>
       <div className="lg:hidden">
         <MobileBetTop bet={bet} />
         <MobileValueGrid
@@ -752,7 +767,9 @@ function PositionsTable({
       />
       <TableHeader labels={["Team", "Status", "Odds", "Stake", "Payout"]} />
       {openBets.length ? (
-        openBets.map((bet) => <ActiveBetRow key={bet.id} bet={bet} />)
+        openBets.map((bet, index) => (
+          <ActiveBetRow key={bet.id} bet={bet} index={index} />
+        ))
       ) : (
         <EmptyOpenPositionsRow />
       )}
@@ -760,7 +777,9 @@ function PositionsTable({
       <TableSectionHeader title="Past" count={pastBets.length} />
       <TableHeader labels={["Team", "Status", "Odds", "Stake", "P/L"]} />
       {pastBets.length ? (
-        pastBets.map((bet) => <PastBetRow key={bet.id} bet={bet} />)
+        pastBets.map((bet, index) => (
+          <PastBetRow key={bet.id} bet={bet} index={index} />
+        ))
       ) : (
         <EmptyTableRow message="No past positions." />
       )}

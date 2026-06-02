@@ -106,7 +106,7 @@ export default function AppSidebar() {
                 >
                   <Icon className="h-[24px] w-[24px] shrink-0" />
 
-                  <span className="text-[12px] font-semibold leading-none">
+                  <span className="text-[12px] font-medium leading-none">
                     {item.label}
                   </span>
                 </Link>

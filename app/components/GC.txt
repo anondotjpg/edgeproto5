@@ -63,41 +63,13 @@ function formatPrice(price?: number) {
   return price > 0 ? `+${price}` : `${price}`;
 }
 
-function getImpliedProbability(price?: number) {
-  if (price === undefined || price === null || price === 0) return null;
-
-  return price > 0
-    ? 100 / (price + 100)
-    : Math.abs(price) / (Math.abs(price) + 100);
-}
-
 function formatImpliedPercent(price?: number) {
-  const probability = getImpliedProbability(price);
+  if (price === undefined || price === null || price === 0) return "—";
 
-  if (probability === null) return "—";
+  const probability =
+    price > 0 ? 100 / (price + 100) : Math.abs(price) / (Math.abs(price) + 100);
 
   return `${Math.round(probability * 100)}%`;
-}
-
-function getTeamTicker(team: string, info?: TeamInfo) {
-  const rawTicker = info?.abbreviation || info?.alias;
-
-  if (rawTicker) return rawTicker.toUpperCase();
-
-  const words = team
-    .split(/\s+/)
-    .map((word) => word.trim())
-    .filter(Boolean);
-
-  if (words.length > 1) {
-    return words
-      .map((word) => word[0])
-      .join("")
-      .slice(0, 3)
-      .toUpperCase();
-  }
-
-  return team.slice(0, 3).toUpperCase();
 }
 
 function getGameDateKey(date: string) {
@@ -134,14 +106,14 @@ function formatGameTime(date: string) {
 
 function getLogoClassName(sportKey: string) {
   return sportKey === "mlb"
-    ? "h-9 w-9 object-contain xl:h-7 xl:w-7"
-    : "h-9 w-9 rounded-sm bg-white/5 object-contain xl:h-7 xl:w-7";
+    ? "h-7 w-7 object-contain"
+    : "h-7 w-7 rounded-sm bg-white/5 object-contain";
 }
 
 function getLogoFallbackClassName(sportKey: string) {
   return sportKey === "mlb"
-    ? "h-9 w-9 bg-zinc-950 xl:h-8 xl:w-8"
-    : "h-9 w-9 rounded-sm bg-zinc-950 xl:h-8 xl:w-8";
+    ? "h-8 w-8 bg-zinc-950"
+    : "h-8 w-8 rounded-sm bg-zinc-950";
 }
 
 function buildBetData({
@@ -196,7 +168,7 @@ function TeamRow({
   sportKey: string;
 }) {
   return (
-    <div className="flex h-[52px] items-center gap-2.5 px-0 py-1.5 xl:h-[46px] xl:gap-2.5 xl:px-2">
+    <div className="flex h-[46px] items-center gap-2.5 px-2 py-1.5">
       {info?.logo ? (
         <img
           src={info.logo}
@@ -208,11 +180,11 @@ function TeamRow({
       )}
 
       <div className="min-w-0">
-        <div className="truncate text-[16px] font-semibold leading-tight text-zinc-100 xl:text-[14px] xl:font-medium">
+        <div className="truncate text-[14px] font-medium leading-tight text-zinc-100">
           {info?.name || team}
         </div>
 
-        <div className="mt-0.5 truncate text-[13px] leading-none text-zinc-500 xl:text-[12px]">
+        <div className="mt-0.5 truncate text-[12px] leading-none text-zinc-500">
           {info?.record || info?.abbreviation || info?.alias || "—"}
         </div>
       </div>
@@ -250,35 +222,19 @@ function MoneylineFace({
   );
 }
 
-function MobileMoneylineModalButton({
-  betData,
-  ticker,
-}: {
-  betData: BetSlipData;
-  ticker: string;
-}) {
+function MoneylineModalButton({ betData }: { betData: BetSlipData }) {
   return (
     <div
-      className="relative rounded-xl bg-zinc-800"
+      className="rounded-xl bg-zinc-800"
       style={{
         paddingBottom: "2px",
       }}
     >
       <BetSlipModal
         {...betData}
-        triggerClassName="flex h-[50px] w-full translate-y-[-2px] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0"
-        triggerContentClassName="sr-only"
+        triggerClassName="flex h-[42px] w-full translate-y-[-2px] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 px-2.5 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0"
+        triggerContentClassName="text-[13px] font-semibold leading-none tracking-tight text-zinc-100"
       />
-
-      <div className="pointer-events-none absolute inset-0 flex translate-y-[-2px] items-center justify-center gap-1.5">
-        <span className="text-[11px] font-bold leading-none tracking-[0.12em] text-zinc-500">
-          {ticker}
-        </span>
-
-        <span className="text-[20px] font-bold leading-none tracking-tight text-zinc-100">
-          {betData.odds}
-        </span>
-      </div>
     </div>
   );
 }
@@ -302,29 +258,38 @@ function MoneylineCell({
   const betData = buildBetData({ game, team, outcome, side, info: teamInfo });
 
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(betData)}
-      className="block w-full cursor-pointer"
-    >
-      <MoneylineFace selected={selected}>
-        <span className="text-[13px] font-semibold leading-none tracking-tight text-zinc-100">
-          {betData.odds}
-        </span>
-      </MoneylineFace>
-    </button>
+    <>
+      <div className="hidden xl:block">
+        <button
+          type="button"
+          onClick={() => onSelect(betData)}
+          className="block w-full cursor-pointer"
+        >
+          <MoneylineFace selected={selected}>
+            <span className="text-[13px] font-semibold leading-none tracking-tight text-zinc-100">
+              {betData.odds}
+            </span>
+          </MoneylineFace>
+        </button>
+      </div>
+
+      <div className="xl:hidden">
+        <MoneylineModalButton betData={betData} />
+      </div>
+    </>
   );
 }
 
 function DateMarketHeader({ date }: { date: string }) {
   return (
-    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_84px] xl:items-end xl:gap-2 xl:pr-3">
+    <div className="grid grid-cols-[minmax(0,1fr)_84px] items-end gap-2 md:pr-3">
       <div className="text-[18px] font-semibold leading-none tracking-tight text-zinc-100">
         {date}
       </div>
 
-      <div className="hidden items-center justify-center pb-0.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500 xl:flex">
-        Moneyline
+      <div className="flex items-center justify-center pb-0.5 text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
+        <span className="md:hidden">ML</span>
+        <span className="hidden md:inline">Moneyline</span>
       </div>
     </div>
   );
@@ -352,39 +317,23 @@ function GameCard({
   const homeSelected =
     selectedBet?.gameId === game.id && selectedBet.team === game.home_team;
 
-  const awayBetData = buildBetData({
-    game,
-    team: game.away_team,
-    outcome: awayMoneyline,
-    side: "away",
-    info: game.away_team_info,
-  });
-
-  const homeBetData = buildBetData({
-    game,
-    team: game.home_team,
-    outcome: homeMoneyline,
-    side: "home",
-    info: game.home_team_info,
-  });
-
   return (
-    <>
-      <article className="relative xl:hidden md:rounded-xl md:bg-zinc-900/20 md:p-3">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="inline-flex h-7 items-center rounded-xl bg-zinc-900 px-3 text-[11px] font-medium text-zinc-100">
-            {formatGameTime(game.commence_time)}
-          </div>
-
-          <Link
-            href={eventHref}
-            className="inline-flex h-8 items-center gap-2 rounded-xl bg-zinc-900 px-3 text-[13px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800"
-          >
-            <span>Game View</span>
-            <FaChevronRight className="h-2.5 w-2.5" />
-          </Link>
+    <article className="relative md:rounded-xl md:bg-zinc-900/20 md:p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="inline-flex h-7 items-center rounded-xl bg-zinc-900 px-3 text-[11px] font-medium text-zinc-100">
+          {formatGameTime(game.commence_time)}
         </div>
 
+        <Link
+          href={eventHref}
+          className="inline-flex h-8 items-center gap-2 rounded-xl bg-zinc-900 px-3 text-[13px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800"
+        >
+          <span>Game View</span>
+          <FaChevronRight className="h-2.5 w-2.5" />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-[minmax(0,1fr)_84px] gap-2">
         <div>
           <TeamRow
             team={game.away_team}
@@ -399,71 +348,27 @@ function GameCard({
           />
         </div>
 
-        <div className="mt-2.5 grid grid-cols-2 gap-3">
-          <MobileMoneylineModalButton
-            betData={awayBetData}
-            ticker={getTeamTicker(game.away_team, game.away_team_info)}
+        <div className="flex flex-col gap-2">
+          <MoneylineCell
+            game={game}
+            team={game.away_team}
+            outcome={awayMoneyline}
+            side="away"
+            selected={awaySelected}
+            onSelect={onSelectBet}
           />
 
-          <MobileMoneylineModalButton
-            betData={homeBetData}
-            ticker={getTeamTicker(game.home_team, game.home_team_info)}
+          <MoneylineCell
+            game={game}
+            team={game.home_team}
+            outcome={homeMoneyline}
+            side="home"
+            selected={homeSelected}
+            onSelect={onSelectBet}
           />
         </div>
-      </article>
-
-      <article className="relative hidden xl:block xl:rounded-xl xl:bg-zinc-900/20 xl:p-3">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="inline-flex h-7 items-center rounded-xl bg-zinc-900 px-3 text-[11px] font-medium text-zinc-100">
-            {formatGameTime(game.commence_time)}
-          </div>
-
-          <Link
-            href={eventHref}
-            className="inline-flex h-8 items-center gap-2 rounded-xl bg-zinc-900 px-3 text-[13px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800"
-          >
-            <span>Game View</span>
-            <FaChevronRight className="h-2.5 w-2.5" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-[minmax(0,1fr)_84px] gap-2">
-          <div>
-            <TeamRow
-              team={game.away_team}
-              info={game.away_team_info}
-              sportKey={game.sport_key}
-            />
-
-            <TeamRow
-              team={game.home_team}
-              info={game.home_team_info}
-              sportKey={game.sport_key}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <MoneylineCell
-              game={game}
-              team={game.away_team}
-              outcome={awayMoneyline}
-              side="away"
-              selected={awaySelected}
-              onSelect={onSelectBet}
-            />
-
-            <MoneylineCell
-              game={game}
-              team={game.home_team}
-              outcome={homeMoneyline}
-              side="home"
-              selected={homeSelected}
-              onSelect={onSelectBet}
-            />
-          </div>
-        </div>
-      </article>
-    </>
+      </div>
+    </article>
   );
 }
 
@@ -481,6 +386,7 @@ export default function GamesClient({
   selectedLeagueMeta: LeagueMeta;
 }) {
   const totalGames = league?.games.length ?? 0;
+  const [selectedBet, setSelectedBet] = useState<BetSlipData | null>(null);
 
   const firstBet = useMemo(() => {
     const firstGame = league?.games[0];
@@ -498,8 +404,6 @@ export default function GamesClient({
       info: firstGame.away_team_info,
     });
   }, [league]);
-
-  const [selectedBet, setSelectedBet] = useState<BetSlipData | null>(firstBet);
 
   const groupedGames = useMemo(() => {
     const groups: {
@@ -537,7 +441,7 @@ export default function GamesClient({
           <LeagueTabs leagues={leagues} selectedLeague={selectedLeague} />
         </header>
 
-        <div className="mt-4 grid gap-6 md:mt-8 xl:grid-cols-[minmax(0,860px)_420px] xl:items-start xl:justify-center">
+        <div className="mt-4 md:mt-8 grid gap-6 xl:grid-cols-[minmax(0,860px)_420px] xl:items-start xl:justify-center">
           <main className="min-w-0">
             <section className="space-y-4">
               <div className="grid grid-cols-[112px_minmax(0,1fr)_112px] items-end gap-3">
@@ -591,20 +495,18 @@ export default function GamesClient({
 
           <aside className="sticky top-18 hidden xl:block">
             <div
-              className={[
-                "overflow-hidden rounded-2xl bg-zinc-950 shadow-2xl",
-                selectedBet
-                  ? "border border-zinc-800"
-                  : "border border-transparent",
-              ].join(" ")}
+                className={[
+                    "overflow-hidden rounded-2xl bg-zinc-950 shadow-2xl",
+                    selectedBet ? "border border-zinc-800" : "border border-transparent",
+                ].join(" ")}
             >
-              {selectedBet ? (
-                <BetSlipPanel {...selectedBet} enabled panelMode="sidebar" />
-              ) : (
-                <div className="invisible p-5 text-sm text-zinc-500">
-                  Select a moneyline to place a bet.
-                </div>
-              )}
+                {selectedBet ? (
+                    <BetSlipPanel {...selectedBet} enabled panelMode="sidebar" />
+                ) : (
+                    <div className="p-5 text-sm text-zinc-500 invisible">
+                    Select a moneyline to place a bet.
+                    </div>
+                )}
             </div>
           </aside>
         </div>

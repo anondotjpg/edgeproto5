@@ -136,34 +136,48 @@ function TableHeader({ labels }: { labels: string[] }) {
   );
 }
 
-function PositionSkeletonRow() {
+function getSkeletonRowClassName(index: number) {
+  const tint =
+    index % 3 === 0
+      ? "bg-zinc-950/80"
+      : index % 3 === 1
+        ? "bg-zinc-900/35"
+        : "bg-zinc-900/20";
+
+  return [
+    "border-b border-zinc-900/80 px-3 py-4 text-sm last:border-b-0 sm:px-5 sm:py-3.5 lg:py-3",
+    tint,
+  ].join(" ");
+}
+
+function PositionSkeletonRow({ index }: { index: number }) {
   return (
-    <div className="border-b border-zinc-900/80 px-3 py-3 text-sm last:border-b-0 sm:px-5">
+    <div className={getSkeletonRowClassName(index)}>
       <div className="lg:hidden">
-        <div className="flex min-w-0 items-start gap-3">
-          <SkeletonBlock className="h-9 w-9 shrink-0 rounded-lg" />
+        <div className="flex min-w-0 items-start gap-3.5">
+          <SkeletonBlock className="h-11 w-11 shrink-0 rounded-lg lg:h-9 lg:w-9" />
 
           <div className="min-w-0 flex-1 pr-2">
-            <SkeletonBlock className="h-5 w-32" />
-            <SkeletonBlock className="mt-1.5 h-4 w-28" />
+            <SkeletonBlock className="h-6 w-36" />
+            <SkeletonBlock className="mt-1 h-5 w-32" />
           </div>
 
-          <SkeletonBlock className="mt-0 h-5 w-14 shrink-0" />
+          <SkeletonBlock className="mt-0.5 h-6 w-16 shrink-0" />
         </div>
 
-        <div className="mt-2.5 flex justify-end pl-[48px] text-[11px] leading-none">
-          <div className="grid w-full max-w-[225px] grid-cols-3 gap-2 text-right">
+        <div className="mt-3 flex justify-end pl-[58px]">
+          <div className="grid w-full max-w-[250px] grid-cols-3 gap-2.5 text-right">
             <div>
-              <SkeletonBlock className="ml-auto h-3 w-12" />
-              <SkeletonBlock className="ml-auto mt-2 h-5 w-14" />
+              <SkeletonBlock className="ml-auto h-3.5 w-14" />
+              <SkeletonBlock className="ml-auto mt-2 h-6 w-16" />
             </div>
             <div>
-              <SkeletonBlock className="ml-auto h-3 w-12" />
-              <SkeletonBlock className="ml-auto mt-2 h-5 w-16" />
+              <SkeletonBlock className="ml-auto h-3.5 w-14" />
+              <SkeletonBlock className="ml-auto mt-2 h-6 w-[70px]" />
             </div>
             <div>
-              <SkeletonBlock className="ml-auto h-3 w-12" />
-              <SkeletonBlock className="ml-auto mt-2 h-5 w-20" />
+              <SkeletonBlock className="ml-auto h-3.5 w-14" />
+              <SkeletonBlock className="ml-auto mt-2 h-6 w-20" />
             </div>
           </div>
         </div>
@@ -192,13 +206,15 @@ function PositionsTableSkeleton() {
     <div className="overflow-hidden rounded-2xl border border-zinc-900 bg-zinc-950/80 shadow-sm lg:overflow-x-auto">
       <TableSectionHeaderSkeleton title="Open" />
       <TableHeader labels={["Team", "Status", "Odds", "Stake", "Payout"]} />
-      <PositionSkeletonRow />
-      <PositionSkeletonRow />
+      {[0, 1].map((index) => (
+        <PositionSkeletonRow key={`open-position-skeleton-${index}`} index={index} />
+      ))}
 
       <TableSectionHeaderSkeleton title="Past" />
       <TableHeader labels={["Team", "Status", "Odds", "Stake", "P/L"]} />
-      <PositionSkeletonRow />
-      <PositionSkeletonRow />
+      {[0, 1].map((index) => (
+        <PositionSkeletonRow key={`past-position-skeleton-${index}`} index={index} />
+      ))}
     </div>
   );
 }
