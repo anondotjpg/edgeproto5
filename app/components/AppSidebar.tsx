@@ -72,14 +72,14 @@ export default function AppSidebar() {
                 key={item.label}
                 href={item.href}
                 className={[
-                  "flex h-full flex-col items-center justify-center gap-0.5 px-2 outline-none transition-colors",
+                  "flex h-full flex-col items-center justify-center gap-1 px-2 outline-none transition-colors",
                   "focus:outline-none focus-visible:outline-none",
                   isActive ? "text-zinc-100" : "text-zinc-500",
                 ].join(" ")}
               >
-                <Icon className="h-[20px] w-[20px] shrink-0" />
+                <Icon className="h-[23px] w-[23px] shrink-0" />
 
-                <span className="text-[11px] font-medium leading-none">
+                <span className="text-[12px] font-semibold leading-none">
                   {item.label}
                 </span>
               </Link>
