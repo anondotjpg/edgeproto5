@@ -3,12 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { GoHomeFill } from "react-icons/go";
+import { MdAccountBalanceWallet } from "react-icons/md";
+import { IoStatsChart } from "react-icons/io5";
+import { SiCashapp } from "react-icons/si";
 
 const NAV_LINKS = [
-  { label: "Dash", href: "/" },
-  { label: "Accounts", href: "/accounts" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "Payouts", href: "/payouts" },
+  { label: "Dash", href: "/", Icon: GoHomeFill },
+  { label: "Accounts", href: "/accounts", Icon: MdAccountBalanceWallet },
+  { label: "Portfolio", href: "/portfolio", Icon: IoStatsChart },
+  { label: "Payouts", href: "/payouts", Icon: SiCashapp },
 ] as const;
 
 export default function AppSidebar() {
@@ -42,7 +46,9 @@ export default function AppSidebar() {
                   className={[
                     "group flex h-[42px] w-full items-center rounded-md outline-none transition-colors",
                     "focus:outline-none focus-visible:outline-none",
-                    isActive ? "text-zinc-100" : "text-zinc-500 hover:text-zinc-200",
+                    isActive
+                      ? "text-zinc-100"
+                      : "text-zinc-500 hover:text-zinc-200",
                   ].join(" ")}
                 >
                   <span className="text-[30px] font-semibold leading-none tracking-tight">
@@ -56,23 +62,24 @@ export default function AppSidebar() {
       </aside>
 
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-800 bg-[#09090b]/95 backdrop-blur md:hidden">
-        <div className="grid h-16 grid-cols-4 px-[10%]">
+        <div className="grid h-20 grid-cols-4 px-[10%]">
           {NAV_LINKS.map((item) => {
             const isActive = pathname === item.href;
+            const Icon = item.Icon;
 
             return (
               <Link
                 key={item.label}
                 href={item.href}
-                className="flex items-center justify-center px-2 outline-none focus:outline-none focus-visible:outline-none"
+                className={[
+                  "flex h-full flex-col items-center justify-center gap-0.5 px-2 outline-none transition-colors",
+                  "focus:outline-none focus-visible:outline-none",
+                  isActive ? "text-zinc-100" : "text-zinc-500",
+                ].join(" ")}
               >
-                <span
-                  className={
-                    isActive
-                      ? "rounded-md text-[15px] font-medium text-zinc-100"
-                      : "rounded-md text-[15px] font-medium text-zinc-500"
-                  }
-                >
+                <Icon className="h-[20px] w-[20px] shrink-0" />
+
+                <span className="text-[11px] font-medium leading-none">
                   {item.label}
                 </span>
               </Link>
