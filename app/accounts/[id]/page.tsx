@@ -908,12 +908,6 @@ export default async function AccountPage({ params }: AccountPageProps) {
                 <div className="text-[17px] font-medium leading-none text-zinc-500">
                   Goal
                 </div>
-
-                <div
-                  className={COMPACT_BADGE_CLASS}
-                >
-                  {resultLabel(accountStatus)}
-                </div>
               </div>
 
               <GoalProgressBar value={goalProgress} />

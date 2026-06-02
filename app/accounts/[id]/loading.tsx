@@ -49,8 +49,6 @@ function GoalSkeleton() {
         <div className="text-[17px] font-medium leading-none text-zinc-500">
           Goal
         </div>
-
-        <SkeletonBlock className="h-5 w-16 shrink-0 rounded-full" />
       </div>
 
       <GoalBarsSkeleton />
