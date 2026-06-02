@@ -895,7 +895,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
               </div>
             </div>
 
-            <div className="flex min-h-[166px] flex-col rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900 lg:ring-0">
+            <div className="flex min-h-[166px] flex-col rounded-[26px] bg-zinc-950/80 px-5 py-4 ring-1 ring-zinc-900 lg:rounded-none lg:bg-transparent lg:px-0 lg:py-0 lg:ring-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-[17px] font-medium leading-tight text-zinc-500">
