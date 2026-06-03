@@ -448,7 +448,7 @@ function GameCard({
 
   return (
     <>
-      <article className="relative xl:hidden md:rounded-xl md:bg-zinc-900/30 md:p-3">
+      <article className="relative xl:hidden md:rounded-xl md:border md:border-zinc-800 md:p-3">
         <GameCardHeader game={game} eventHref={eventHref} />
 
         <div>
@@ -478,7 +478,7 @@ function GameCard({
         </div>
       </article>
 
-      <article className="relative hidden xl:block xl:rounded-xl xl:bg-zinc-900/30 xl:p-3">
+      <article className="relative hidden xl:block xl:rounded-xl xl:border xl:border-zinc-800 xl:p-3">
         <GameCardHeader game={game} eventHref={eventHref} />
 
         <div className="grid grid-cols-[minmax(0,1fr)_84px] gap-2">
