@@ -239,9 +239,11 @@ function TeamRow({
           {info?.name || team}
         </div>
 
-        <div className="mt-0.5 truncate text-[13px] leading-none text-zinc-500 xl:text-[12px]">
-          {info?.record || info?.abbreviation || info?.alias || "—"}
-        </div>
+        {info?.record ? (
+            <div className="mt-0.5 truncate text-[13px] leading-none text-zinc-500 xl:text-[12px]">
+                {info.record}
+            </div>
+        ) : null}
       </div>
     </div>
   );

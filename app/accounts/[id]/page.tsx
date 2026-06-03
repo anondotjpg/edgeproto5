@@ -523,7 +523,7 @@ function MobileBetTop({ bet }: { bet: BetRow }) {
         </div>
 
         <div className="mt-1 h-5 truncate text-[13px] font-medium leading-5 text-zinc-500">
-          {bet.league?.toUpperCase()} · {bet.market}
+          {bet.league?.toUpperCase()}
         </div>
       </div>
 
