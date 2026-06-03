@@ -368,7 +368,7 @@ function GameCardHeader({ game, eventHref }: { game: Game; eventHref: string }) 
         </div>
 
         {marketVolume ? (
-          <div className="min-w-0 truncate text-[13px] font-semibold leading-none text-zinc-500 sm:text-[14px]">
+          <div className="min-w-0 truncate text-[13px] font-medium leading-none text-zinc-500 sm:text-[14px]">
             {marketVolume}
           </div>
         ) : null}
