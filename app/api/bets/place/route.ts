@@ -4,6 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { privyServer } from "@/lib/privy-server";
 
 const MIN_ALLOWED_AMERICAN_ODDS = -190;
+const DUPLICATE_OPEN_BET_INDEX = "bets_one_open_polymarket_pick_per_account_idx";
+const LEGACY_DUPLICATE_OPEN_BET_INDEX =
+  "bets_unique_open_account_condition_token";
 
 type PlaceBetBody = {
   accountIds?: string[];
@@ -48,6 +51,13 @@ type ServerBetDetails = {
   outcomeIndex: number;
   teamLogo: string | null;
   teamLogoAlt: string | null;
+};
+
+type RpcLikeError = {
+  code?: string | null;
+  message?: string | null;
+  details?: string | null;
+  hint?: string | null;
 };
 
 function cleanText(value: unknown) {
@@ -147,7 +157,31 @@ function blockBet(message: string, reason: string) {
   });
 }
 
-function cleanRpcError(message: string) {
+function getErrorText(error: RpcLikeError | string | null | undefined) {
+  if (typeof error === "string") return error;
+
+  return [error?.message, error?.details, error?.hint]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function isDuplicateBetError(error: RpcLikeError | string | null | undefined) {
+  const errorText = getErrorText(error);
+  const lowerErrorText = errorText.toLowerCase();
+  const code = typeof error === "string" ? null : error?.code;
+
+  return (
+    code === "23505" ||
+    lowerErrorText.includes("duplicate key") ||
+    lowerErrorText.includes("duplicate") ||
+    errorText.includes(DUPLICATE_OPEN_BET_INDEX) ||
+    errorText.includes(LEGACY_DUPLICATE_OPEN_BET_INDEX)
+  );
+}
+
+function cleanRpcError(error: RpcLikeError | string) {
+  const message = getErrorText(error);
+
   if (message.includes("Max risk per bet exceeded")) {
     return message;
   }
@@ -172,21 +206,11 @@ function cleanRpcError(message: string) {
     return "Invalid odds.";
   }
 
-  if (
-    message.toLowerCase().includes("duplicate") ||
-    message.includes("bets_unique_open_account_condition_token")
-  ) {
+  if (isDuplicateBetError(error)) {
     return "You already placed this bet on this account.";
   }
 
   return message || "Unable to place bet.";
-}
-
-function isDuplicateBetError(message: string) {
-  return (
-    message.toLowerCase().includes("duplicate") ||
-    message.includes("bets_unique_open_account_condition_token")
-  );
 }
 
 export async function POST(req: Request) {
@@ -400,9 +424,9 @@ export async function POST(req: Request) {
       );
 
       if (rpcError) {
-        const cleanedMessage = cleanRpcError(rpcError.message);
+        const cleanedMessage = cleanRpcError(rpcError);
 
-        if (isDuplicateBetError(rpcError.message)) {
+        if (isDuplicateBetError(rpcError)) {
           return blockBet(cleanedMessage, "duplicate_open_bet");
         }
 
