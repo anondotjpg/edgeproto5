@@ -26,6 +26,30 @@ type PlaceBetBody = {
   teamLogoAlt?: string | null;
 };
 
+type EligibleGameRow = {
+  id: string;
+  sport_key: string;
+  commence_time: string;
+  is_live: boolean;
+  status: string;
+  away_team: string;
+  home_team: string;
+  away_team_info: unknown | null;
+  home_team_info: unknown | null;
+  bookmakers: unknown;
+  polymarket: unknown;
+  outcome_token_ids: unknown | null;
+};
+
+type ServerBetDetails = {
+  side: "away" | "home";
+  selection: string;
+  odds: number;
+  outcomeIndex: number;
+  teamLogo: string | null;
+  teamLogoAlt: string | null;
+};
+
 function cleanText(value: unknown) {
   if (typeof value !== "string") return null;
 
@@ -41,6 +65,86 @@ function cleanInteger(value: unknown) {
   if (!Number.isInteger(parsed)) return null;
 
   return parsed;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+
+  return value as Record<string, unknown>;
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function getRecordText(record: Record<string, unknown> | null, key: string) {
+  return record ? cleanText(record[key]) : null;
+}
+
+function getTeamInfoValue(teamInfo: unknown, key: string) {
+  return getRecordText(asRecord(teamInfo), key);
+}
+
+function getTokenSide(
+  outcomeTokenIds: unknown,
+  polymarketTokenId: string,
+): "away" | "home" | null {
+  const tokenIds = asRecord(outcomeTokenIds);
+  const awayTokenId = getRecordText(tokenIds, "away");
+  const homeTokenId = getRecordText(tokenIds, "home");
+
+  if (awayTokenId === polymarketTokenId) return "away";
+  if (homeTokenId === polymarketTokenId) return "home";
+
+  return null;
+}
+
+function getServerBetDetails(
+  game: EligibleGameRow,
+  polymarketTokenId: string,
+): ServerBetDetails | null {
+  const side = getTokenSide(game.outcome_token_ids, polymarketTokenId);
+  if (!side) return null;
+
+  const selection = side === "away" ? game.away_team : game.home_team;
+  const outcomeIndex = side === "away" ? 0 : 1;
+  const teamInfo = side === "away" ? game.away_team_info : game.home_team_info;
+
+  const bookmakers = asArray(game.bookmakers);
+  const bookmaker = bookmakers.find((item) => asRecord(item)?.markets);
+  const markets = asArray(asRecord(bookmaker)?.markets);
+  const h2hMarket = markets.find(
+    (item) => getRecordText(asRecord(item), "key") === "h2h",
+  );
+  const outcomes = asArray(asRecord(h2hMarket)?.outcomes);
+
+  const outcomeByName = outcomes.find((item) => {
+    return getRecordText(asRecord(item), "name") === selection;
+  });
+
+  const outcome = asRecord(outcomeByName ?? outcomes[outcomeIndex]);
+  const odds = Number(outcome?.price);
+
+  if (!Number.isFinite(odds) || odds === 0) return null;
+
+  return {
+    side,
+    selection,
+    odds,
+    outcomeIndex,
+    teamLogo: getTeamInfoValue(teamInfo, "logo"),
+    teamLogoAlt: getTeamInfoValue(teamInfo, "name") ?? selection,
+  };
+}
+
+function blockBet(message: string, reason: string) {
+  return NextResponse.json({
+    ok: false,
+    blocked: true,
+    reason,
+    message,
+    error: message,
+  });
 }
 
 function cleanRpcError(message: string) {
@@ -78,6 +182,13 @@ function cleanRpcError(message: string) {
   return message || "Unable to place bet.";
 }
 
+function isDuplicateBetError(message: string) {
+  return (
+    message.toLowerCase().includes("duplicate") ||
+    message.includes("bets_unique_open_account_condition_token")
+  );
+}
+
 export async function POST(req: Request) {
   try {
     const headerStore = await headers();
@@ -103,59 +214,38 @@ export async function POST(req: Request) {
 
     const accountIds = body.accountIds ?? [];
     const gameId = cleanText(body.gameId);
-    const league = cleanText(body.league);
-    const market = cleanText(body.market);
-    const selection = cleanText(body.selection);
-    const odds = Number(body.odds);
+    const requestLeague = cleanText(body.league);
+    const requestMarket = cleanText(body.market) ?? "h2h";
     const stake = Number(body.stake);
 
-    const polymarketEventId = cleanText(body.polymarketEventId);
-    const polymarketEventSlug = cleanText(body.polymarketEventSlug);
-    const polymarketMarketId = cleanText(body.polymarketMarketId);
-    const polymarketConditionId = cleanText(body.polymarketConditionId);
-    const polymarketMarketSlug = cleanText(body.polymarketMarketSlug);
-    const polymarketOutcome = cleanText(body.polymarketOutcome);
-    const polymarketOutcomeIndex = cleanInteger(body.polymarketOutcomeIndex);
-    const polymarketTokenId = cleanText(body.polymarketTokenId);
-    const teamLogo = cleanText(body.teamLogo);
-    const teamLogoAlt = cleanText(body.teamLogoAlt);
+    const requestPolymarketEventId = cleanText(body.polymarketEventId);
+    const requestPolymarketEventSlug = cleanText(body.polymarketEventSlug);
+    const requestPolymarketMarketId = cleanText(body.polymarketMarketId);
+    const requestPolymarketConditionId = cleanText(body.polymarketConditionId);
+    const requestPolymarketMarketSlug = cleanText(body.polymarketMarketSlug);
+    const requestPolymarketOutcomeIndex = cleanInteger(
+      body.polymarketOutcomeIndex,
+    );
+    const requestPolymarketTokenId = cleanText(body.polymarketTokenId);
+    const requestTeamLogo = cleanText(body.teamLogo);
+    const requestTeamLogoAlt = cleanText(body.teamLogoAlt);
 
     if (!accountIds.length) {
-      return NextResponse.json(
-        { error: "Select at least one account." },
-        { status: 400 },
-      );
+      return blockBet("Select at least one account.", "missing_account");
     }
 
-    if (!gameId || !league || !market || !selection) {
-      return NextResponse.json(
-        { error: "Missing bet details." },
-        { status: 400 },
-      );
-    }
-
-    if (!Number.isFinite(odds) || odds === 0) {
-      return NextResponse.json({ error: "Invalid odds." }, { status: 400 });
-    }
-
-    if (odds < MIN_ALLOWED_AMERICAN_ODDS) {
-      return NextResponse.json(
-        { error: "Only -190 or better odds can be placed." },
-        { status: 400 },
-      );
+    if (!gameId || !requestLeague || !requestMarket) {
+      return blockBet("Missing bet details.", "missing_bet_details");
     }
 
     if (!Number.isFinite(stake) || stake <= 0) {
-      return NextResponse.json({ error: "Invalid stake." }, { status: 400 });
+      return blockBet("Invalid stake.", "invalid_stake");
     }
 
-    if (!polymarketConditionId || !polymarketTokenId) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing Polymarket settlement data. Refresh the market and try again.",
-        },
-        { status: 400 },
+    if (!requestPolymarketConditionId || !requestPolymarketTokenId) {
+      return blockBet(
+        "Missing Polymarket settlement data. Refresh the market and try again.",
+        "missing_settlement_data",
       );
     }
 
@@ -178,15 +268,14 @@ export async function POST(req: Request) {
     );
 
     if (!cleanAccountIds.length) {
-      return NextResponse.json(
-        { error: "Invalid account ID." },
-        { status: 400 },
-      );
+      return blockBet("Invalid account ID.", "invalid_account");
     }
 
     const { data: eligibleGame, error: eligibleGameError } = await supabaseAdmin
       .from("eligible_games")
-      .select("id, is_live, status, commence_time, polymarket")
+      .select(
+        "id, sport_key, commence_time, is_live, status, away_team, home_team, away_team_info, home_team_info, bookmakers, polymarket, outcome_token_ids",
+      )
       .eq("id", gameId)
       .maybeSingle();
 
@@ -196,44 +285,63 @@ export async function POST(req: Request) {
       !eligibleGame ||
       !["open", "live"].includes(String(eligibleGame.status))
     ) {
-      return NextResponse.json(
-        { error: "This game is no longer available." },
-        { status: 400 },
-      );
+      return blockBet("This game is no longer available.", "game_unavailable");
     }
 
+    const game = eligibleGame as EligibleGameRow;
     const gameHasStarted =
-      Boolean(eligibleGame.is_live) ||
-      Date.parse(String(eligibleGame.commence_time)) <= Date.now();
+      Boolean(game.is_live) ||
+      Date.parse(String(game.commence_time)) <= Date.now();
 
     if (gameHasStarted) {
-      return NextResponse.json({ error: "Game Started" }, { status: 400 });
+      return blockBet("Game Started", "game_started");
     }
 
-    const eligiblePolymarket = eligibleGame.polymarket as {
-      condition_id?: string | null;
-      clob_token_ids?: string[] | null;
-    } | null;
+    const eligiblePolymarket = asRecord(game.polymarket);
+    const serverPolymarketEventId = getRecordText(
+      eligiblePolymarket,
+      "event_id",
+    );
+    const serverPolymarketEventSlug = getRecordText(
+      eligiblePolymarket,
+      "event_slug",
+    );
+    const serverPolymarketMarketId = getRecordText(
+      eligiblePolymarket,
+      "market_id",
+    );
+    const serverPolymarketMarketSlug = getRecordText(
+      eligiblePolymarket,
+      "market_slug",
+    );
+    const serverPolymarketConditionId = getRecordText(
+      eligiblePolymarket,
+      "condition_id",
+    );
 
     if (
-      eligiblePolymarket?.condition_id &&
-      eligiblePolymarket.condition_id !== polymarketConditionId
+      serverPolymarketConditionId &&
+      serverPolymarketConditionId !== requestPolymarketConditionId
     ) {
-      return NextResponse.json(
-        { error: "This market changed. Refresh and try again." },
-        { status: 400 },
+      return blockBet(
+        "This market changed. Refresh and try again.",
+        "market_changed",
       );
     }
 
-    if (
-      Array.isArray(eligiblePolymarket?.clob_token_ids) &&
-      !eligiblePolymarket.clob_token_ids.includes(polymarketTokenId)
-    ) {
-      return NextResponse.json(
-        {
-          error: "This outcome is no longer available. Refresh and try again.",
-        },
-        { status: 400 },
+    const serverBet = getServerBetDetails(game, requestPolymarketTokenId);
+
+    if (!serverBet) {
+      return blockBet(
+        "This outcome is no longer available. Refresh and try again.",
+        "outcome_unavailable",
+      );
+    }
+
+    if (serverBet.odds < MIN_ALLOWED_AMERICAN_ODDS) {
+      return blockBet(
+        "Only -190 or better odds can be placed.",
+        "odds_not_allowed",
       );
     }
 
@@ -243,17 +351,17 @@ export async function POST(req: Request) {
         .select("id, account_id")
         .eq("user_id", dbUser.id)
         .in("account_id", cleanAccountIds)
-        .eq("polymarket_condition_id", polymarketConditionId)
-        .eq("polymarket_token_id", polymarketTokenId)
+        .eq("polymarket_condition_id", requestPolymarketConditionId)
+        .eq("polymarket_token_id", requestPolymarketTokenId)
         .eq("status", "open")
         .limit(1);
 
     if (duplicateBetError) throw duplicateBetError;
 
     if (duplicateBets?.length) {
-      return NextResponse.json(
-        { error: "You already placed this bet on this account." },
-        { status: 400 },
+      return blockBet(
+        "You already placed this bet on this account.",
+        "duplicate_open_bet",
       );
     }
 
@@ -265,30 +373,42 @@ export async function POST(req: Request) {
         {
           p_user_id: dbUser.id,
           p_account_id: cleanAccountId,
-          p_game_id: gameId,
-          p_league: league,
-          p_market: market,
-          p_selection: selection,
-          p_odds: odds,
+          p_game_id: game.id,
+          p_league: game.sport_key,
+          p_market: requestMarket,
+          p_selection: serverBet.selection,
+          p_odds: serverBet.odds,
           p_stake: stake,
 
-          p_polymarket_event_id: polymarketEventId,
-          p_polymarket_event_slug: polymarketEventSlug,
-          p_polymarket_market_id: polymarketMarketId,
-          p_polymarket_condition_id: polymarketConditionId,
-          p_polymarket_market_slug: polymarketMarketSlug,
-          p_polymarket_outcome: polymarketOutcome,
-          p_polymarket_outcome_index: polymarketOutcomeIndex,
-          p_polymarket_token_id: polymarketTokenId,
-          p_team_logo: teamLogo,
-          p_team_logo_alt: teamLogoAlt,
+          p_polymarket_event_id:
+            serverPolymarketEventId ?? requestPolymarketEventId,
+          p_polymarket_event_slug:
+            serverPolymarketEventSlug ?? requestPolymarketEventSlug,
+          p_polymarket_market_id:
+            serverPolymarketMarketId ?? requestPolymarketMarketId,
+          p_polymarket_condition_id:
+            serverPolymarketConditionId ?? requestPolymarketConditionId,
+          p_polymarket_market_slug:
+            serverPolymarketMarketSlug ?? requestPolymarketMarketSlug,
+          p_polymarket_outcome: serverBet.selection,
+          p_polymarket_outcome_index:
+            requestPolymarketOutcomeIndex ?? serverBet.outcomeIndex,
+          p_polymarket_token_id: requestPolymarketTokenId,
+          p_team_logo: serverBet.teamLogo ?? requestTeamLogo,
+          p_team_logo_alt: serverBet.teamLogoAlt ?? requestTeamLogoAlt,
         },
       );
 
       if (rpcError) {
+        const cleanedMessage = cleanRpcError(rpcError.message);
+
+        if (isDuplicateBetError(rpcError.message)) {
+          return blockBet(cleanedMessage, "duplicate_open_bet");
+        }
+
         return NextResponse.json(
           {
-            error: cleanRpcError(rpcError.message),
+            error: cleanedMessage,
             details: rpcError.message,
           },
           { status: 400 },
@@ -301,6 +421,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ok: true,
       betIds: placedBetIds,
+      odds: serverBet.odds,
+      selection: serverBet.selection,
     });
   } catch (error) {
     console.error("Place bet error:", error);

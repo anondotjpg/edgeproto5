@@ -50,9 +50,9 @@ const ACCOUNT_PLANS: AccountPlan[] = [
 ];
 
 const PLAN_DETAILS: PlanDetail[] = [
-  { label: "Profit Target", value: "30%" },
-  { label: "Daily Drawdown", value: "10%" },
-  { label: "Total Drawdown", value: "20%" },
+  { label: "Profit Target", value: "25%", accent: true },
+  { label: "Daily Loss", value: "2%" },
+  { label: "Max Loss", value: "5%" },
   { label: "Max Risk/Trade", value: "5%" },
 ];
 

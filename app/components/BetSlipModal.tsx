@@ -1475,32 +1475,47 @@ export function BetSlipPanel({
     }
 
     const currentBet = betRef.current;
-    const currentNumericOdds = parseOdds(currentBet.odds);
+
+    function showBetNotPlaced(message: string, showInlineError = false) {
+      if (showInlineError) {
+        setError(message);
+      }
+
+      toast.info("Bet not placed", {
+        description: message,
+      });
+    }
 
     try {
       setIsPlacing(true);
       setError(null);
 
       if (currentBet.isLive) {
-        throw new Error("Game already started.");
+        showBetNotPlaced("Game Started");
+        return;
       }
 
       if (!selectedAccountIds.length) {
-        throw new Error("Select at least one account.");
+        showBetNotPlaced("Select at least one account.", true);
+        return;
       }
 
       if (!stake || stake <= 0) {
-        throw new Error("Enter a valid bet amount.");
+        showBetNotPlaced("Enter a valid bet amount.", true);
+        return;
       }
 
       if (ruleWarning) {
-        throw new Error(ruleWarning);
+        showBetNotPlaced(ruleWarning, true);
+        return;
       }
 
       if (!currentBet.polymarketConditionId || !currentBet.polymarketTokenId) {
-        throw new Error(
+        showBetNotPlaced(
           "Missing Polymarket settlement data. Refresh and try again.",
+          true,
         );
+        return;
       }
 
       const accessToken = await getAccessToken();
@@ -1521,7 +1536,6 @@ export function BetSlipPanel({
           league: currentBet.league,
           market: currentBet.market,
           selection: currentBet.team,
-          odds: currentNumericOdds,
           stake,
 
           polymarketEventId: currentBet.polymarketEventId,
@@ -1538,10 +1552,23 @@ export function BetSlipPanel({
         }),
       });
 
-      const data = await response.json();
+      const data = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        blocked?: boolean;
+        message?: string;
+        error?: string;
+      } | null;
 
       if (!response.ok) {
-        throw new Error(data?.error || "Unable to place bet.");
+        const message = data?.error || data?.message || "Unable to place bet.";
+        showBetNotPlaced(message, true);
+        return;
+      }
+
+      if (data?.blocked || data?.ok === false) {
+        const message = data.message || data.error || "Bet not placed.";
+        showBetNotPlaced(message);
+        return;
       }
 
       toast("Bet placed", {

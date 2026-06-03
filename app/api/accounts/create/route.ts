@@ -9,6 +9,11 @@ type CreateAccountBody = {
   walletAddress?: string | null;
 };
 
+const PROFIT_TARGET_PERCENT = 25;
+const DAILY_DRAWDOWN_PERCENT = 2;
+const TOTAL_DRAWDOWN_PERCENT = 5;
+const MAX_RISK_PER_TRADE_PERCENT = 5;
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as CreateAccountBody;
@@ -88,12 +93,12 @@ export async function POST(req: Request) {
           one_time_fee: selectedPlan.feeAmount,
           status: "active_dev",
 
-          profit_target_percent: 30,
-          daily_drawdown_percent: 10,
-          total_drawdown_percent: 20,
+          profit_target_percent: PROFIT_TARGET_PERCENT,
+          daily_drawdown_percent: DAILY_DRAWDOWN_PERCENT,
+          total_drawdown_percent: TOTAL_DRAWDOWN_PERCENT,
           min_trading_days: 7,
           max_inactivity_days: 14,
-          max_risk_per_trade_percent: 5,
+          max_risk_per_trade_percent: MAX_RISK_PER_TRADE_PERCENT,
         })
         .select("id")
         .single();
@@ -117,6 +122,12 @@ export async function POST(req: Request) {
           currentBalance: planSize,
           reservedRisk: 0,
           realizedPnl: 0,
+          rules: {
+            profitTargetPercent: PROFIT_TARGET_PERCENT,
+            dailyDrawdownPercent: DAILY_DRAWDOWN_PERCENT,
+            totalDrawdownPercent: TOTAL_DRAWDOWN_PERCENT,
+            maxRiskPerTradePercent: MAX_RISK_PER_TRADE_PERCENT,
+          },
         },
       });
 
