@@ -249,12 +249,9 @@ export default function AccountsPage() {
               </p>
             </div>
 
-            <div className="grid justify-center gap-7 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-7 sm:gap-5 md:grid-cols-2 md:justify-center xl:grid-cols-4">
               {ACCOUNT_PLANS.map((plan) => (
-                <div
-                  key={plan.planKey}
-                  className="mx-auto w-full max-w-[340px]"
-                >
+                <div key={plan.planKey} className="w-full md:mx-auto md:max-w-[340px]">
                   <AccountCard {...plan} />
                 </div>
               ))}
