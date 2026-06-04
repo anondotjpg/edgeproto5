@@ -436,12 +436,27 @@ function DateMarketHeader({ date }: { date: string }) {
 
 function GameCardHeader({ game, eventHref }: { game: Game; eventHref: string }) {
   const marketVolume = formatMarketVolume(getMarketVolume(game));
+  const isLive = getGameIsLive(game);
 
   return (
     <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-2.5">
-        <div className="inline-flex h-7 shrink-0 items-center rounded-xl bg-zinc-900 px-3 text-[13px] font-medium text-zinc-100">
-          {formatGameTime(game.commence_time)}
+        <div
+          className={[
+            "inline-flex h-7 shrink-0 items-center rounded-xl px-3 text-[13px] font-medium",
+            isLive
+              ? "gap-1.5 bg-red-950/35 text-red-400"
+              : "bg-zinc-900 text-zinc-100",
+          ].join(" ")}
+        >
+          {isLive ? (
+            <>
+              <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+              <span>Live</span>
+            </>
+          ) : (
+            formatGameTime(game.commence_time)
+          )}
         </div>
 
         {marketVolume ? (
