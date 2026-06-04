@@ -266,9 +266,40 @@ export default function OwnedAccountsSection() {
   const reserveArrowSpace = showSkeleton || hasOverflowControls;
   const showMobileSwipeHint = showAccounts && accounts.length > 1;
 
+  const hideOnMobileWhenCollapsed = !showAccounts;
+
   return (
-    <div className="mb-6 min-h-[122px] md:pt-[5%] lg:pt-0">
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <div
+      className={[
+        "mb-6 overflow-hidden transition-[height] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:h-auto sm:min-h-[122px] sm:overflow-visible sm:transition-none md:pt-[5%] lg:pt-0",
+        showAccounts ? "h-[124px]" : "h-[28px]",
+      ].join(" ")}
+    >
+      <style>{`
+        @keyframes ownedAccountsMobileReveal {
+          0% {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (max-width: 639px) {
+          .owned-accounts-mobile-reveal {
+            animation: ownedAccountsMobileReveal 850ms cubic-bezier(0.22, 1, 0.36, 1) both;
+          }
+        }
+      `}</style>
+
+      <div
+        className={[
+          "mb-3 items-center justify-between gap-3",
+          hideOnMobileWhenCollapsed ? "hidden sm:flex" : "flex",
+        ].join(" ")}
+      >
         <h2 className="min-w-0 text-base font-semibold tracking-tight text-zinc-100 sm:text-xl">
           Accounts{" "}
           <span className="text-zinc-500">
@@ -317,17 +348,22 @@ export default function OwnedAccountsSection() {
       </div>
 
       {showSkeleton ? (
-        <div ref={rowRef} className={ACCOUNT_ROW_CLASS}>
+        <div ref={rowRef} className={[ACCOUNT_ROW_CLASS, "hidden sm:flex"].join(" ")}>
           <AccountSkeletonCard />
           <AccountSkeletonCard />
           <AccountSkeletonCard />
         </div>
       ) : null}
 
-      {showEmpty ? <EmptyAccountCard authenticated={authenticated} /> : null}
+      {showEmpty ? (
+        <div className="hidden sm:block">
+          <EmptyAccountCard authenticated={authenticated} />
+        </div>
+      ) : null}
 
       {showAccounts ? (
-        <div ref={rowRef} className={ACCOUNT_ROW_CLASS}>
+        <div className="owned-accounts-mobile-reveal sm:contents">
+          <div ref={rowRef} className={ACCOUNT_ROW_CLASS}>
           {accounts.map((account) => {
             const plan = PLAN_CONFIG[account.plan_key as PlanKey];
 
@@ -478,6 +514,7 @@ export default function OwnedAccountsSection() {
               </div>
             );
           })}
+          </div>
         </div>
       ) : null}
     </div>
