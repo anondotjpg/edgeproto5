@@ -100,11 +100,11 @@ function getCardBorderClassName(style: ButtonStyle) {
 
 function getCardGlowClassName(style: ButtonStyle) {
   if (style === "gold") {
-    return "hidden lg:block absolute inset-[-1px] rounded-[24px] shadow-[0_0_30px_rgba(224,184,75,0.22),0_0_60px_rgba(224,184,75,0.1)]";
+    return "absolute inset-[-1px] rounded-[24px] shadow-[0_0_30px_rgba(224,184,75,0.22),0_0_60px_rgba(224,184,75,0.1)]";
   }
 
   if (style === "silver") {
-    return "hidden lg:block absolute inset-[-1px] rounded-[24px] shadow-[0_0_28px_rgba(255,255,255,0.16),0_0_56px_rgba(161,161,170,0.12)]";
+    return "absolute inset-[-1px] rounded-[24px] shadow-[0_0_28px_rgba(255,255,255,0.16),0_0_56px_rgba(161,161,170,0.12)]";
   }
 
   return "";
@@ -201,7 +201,7 @@ function AccountCard({
           />
 
           <p className="mt-3 text-center text-[7px] font-medium uppercase tracking-[0.18em] text-zinc-500">
-            Pay with card or crypto. Instant activation after payment.
+            Pay with crypto. Instant activation after payment.
           </p>
         </div>
       </div>
