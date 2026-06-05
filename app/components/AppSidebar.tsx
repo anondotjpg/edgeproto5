@@ -48,19 +48,22 @@ export default function AppSidebar() {
           <nav className="mt-10 flex flex-col gap-1">
             {NAV_LINKS.map((item) => {
               const isActive = isActivePath(pathname, item.href);
+              const Icon = item.Icon;
 
               return (
                 <Link
                   key={item.label}
                   href={item.href}
                   className={[
-                    "group flex h-[42px] w-full items-center rounded-md outline-none transition-colors",
+                    "group flex h-[42px] w-full items-center gap-4 rounded-md outline-none transition-colors",
                     "focus:outline-none focus-visible:outline-none",
                     isActive
                       ? "text-zinc-100"
                       : "text-zinc-500 hover:text-zinc-200",
                   ].join(" ")}
                 >
+                  <Icon className="h-[24px] w-[24px] shrink-0" />
+
                   <span className="text-[30px] font-semibold leading-none tracking-tight">
                     {item.label}
                   </span>
@@ -85,7 +88,7 @@ export default function AppSidebar() {
                 mass: 0.75,
               }}
             >
-              <div className="h-[58px] w-[76px] rounded-[20px] bg-zinc-900 invisible" />
+              <div className="invisible h-[58px] w-[76px] rounded-[20px] bg-zinc-900" />
             </motion.div>
           ) : null}
 
