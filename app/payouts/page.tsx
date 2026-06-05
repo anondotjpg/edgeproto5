@@ -12,7 +12,7 @@ export default function PayoutsPage() {
           Lock in.
         </h1>
 
-        <p className="mt-6 mx-[7%] max-w-2xl text-[22px] font-medium leading-[1.25] tracking-tight text-zinc-500 sm:mt-7 sm:text-[28px] lg:text-[34px]">
+        <p className="mt-4 mx-[7%] max-w-2xl text-[22px] font-medium leading-[1.25] tracking-tight text-zinc-500 sm:mt-5 sm:text-[28px] lg:text-[34px]">
           Funded accounts will unlock payouts.
         </p>
       </section>
