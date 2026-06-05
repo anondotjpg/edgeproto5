@@ -205,14 +205,14 @@ function formatMarketVolume(value: number | null | undefined) {
 
 function getLogoClassName(sportKey: string) {
   return sportKey === "mlb"
-    ? "h-9 w-9 rounded-sm object-contain xl:h-7 xl:w-7"
-    : "h-9 w-9 rounded-sm object-contain xl:h-7 xl:w-7";
+    ? "h-8 w-8 rounded-sm object-contain xl:h-7 xl:w-7"
+    : "h-8 w-8 rounded-sm object-contain xl:h-7 xl:w-7";
 }
 
 function getLogoFallbackClassName(sportKey: string) {
   return sportKey === "mlb"
-    ? "h-9 w-9 rounded-sm bg-zinc-950 xl:h-7 xl:w-7"
-    : "h-9 w-9 rounded-sm bg-zinc-950 xl:h-7 xl:w-7";
+    ? "h-8 w-8 rounded-sm bg-zinc-950 xl:h-7 xl:w-7"
+    : "h-8 w-8 rounded-sm bg-zinc-950 xl:h-7 xl:w-7";
 }
 
 function getGameIsLive(game: Game): boolean {
@@ -290,7 +290,7 @@ function TeamRow({
   sportKey: string;
 }) {
   return (
-    <div className="flex h-[52px] items-center gap-2.5 px-0 py-1.5 xl:h-[46px] xl:gap-2.5 xl:px-2">
+    <div className="flex h-[46px] items-center gap-2 px-0 py-1 xl:gap-2.5 xl:px-2">
       {info?.logo ? (
         <img
           src={info.logo}
@@ -302,13 +302,13 @@ function TeamRow({
       )}
 
       <div className="min-w-0">
-        <div className="truncate text-[16px] font-semibold leading-tight text-zinc-100 xl:text-[14px] xl:font-medium">
+        <div className="truncate text-[14px] font-semibold leading-tight text-zinc-100 xl:text-[14px] xl:font-medium">
           {info?.name || team}
         </div>
 
         <div
           className={[
-            "mt-0.5 h-4 truncate text-[13px] leading-4 text-zinc-500 xl:text-[12px]",
+            "mt-0.5 h-4 truncate text-[12px] leading-4 text-zinc-500 xl:text-[12px]",
             info?.record ? "" : "invisible",
           ].join(" ")}
         >
@@ -374,7 +374,7 @@ function MobileMoneylineModalButton({
       <BetSlipModal
         {...betData}
         triggerClassName={[
-          "peer flex h-[50px] w-full translate-y-[-2px] cursor-pointer items-center justify-center overflow-hidden rounded-xl border px-3 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0",
+          "peer flex h-[42px] w-full translate-y-[-2px] cursor-pointer items-center justify-center overflow-hidden rounded-xl border px-3 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0",
           betData.isLive
             ? "border-zinc-800 bg-zinc-950/80"
             : "border-zinc-800 bg-zinc-900",
@@ -387,11 +387,11 @@ function MobileMoneylineModalButton({
           <FaLock className="h-3.5 w-3.5 shrink-0 text-zinc-500" />
         ) : (
           <>
-            <span className="text-[11px] font-bold leading-none tracking-[0.12em] text-zinc-500">
+            <span className="text-[10px] font-bold leading-none tracking-[0.12em] text-zinc-500">
               {ticker}
             </span>
 
-            <span className="text-[20px] font-bold leading-none tracking-tight text-zinc-100">
+            <span className="text-[18px] font-bold leading-none tracking-tight text-zinc-100">
               {betData.odds}
             </span>
           </>
@@ -458,11 +458,11 @@ function GameCardHeader({ game, eventHref }: { game: Game; eventHref: string }) 
   const isLive = getGameIsLive(game);
 
   return (
-    <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
-      <div className="flex min-w-0 items-center gap-2.5">
+    <div className="mb-2.5 flex min-w-0 items-center justify-between gap-2.5 xl:mb-3 xl:gap-3">
+      <div className="flex min-w-0 items-center gap-2 xl:gap-2.5">
         <div
           className={[
-            "inline-flex h-7 shrink-0 items-center rounded-xl px-3 text-[13px] font-medium",
+            "inline-flex h-6 shrink-0 items-center rounded-lg px-2.5 text-[12px] font-medium xl:h-7 xl:rounded-xl xl:px-3 xl:text-[13px]",
             isLive
               ? "gap-1.5 bg-red-950/35 text-red-400"
               : "bg-zinc-900 text-zinc-100",
@@ -479,7 +479,7 @@ function GameCardHeader({ game, eventHref }: { game: Game; eventHref: string }) 
         </div>
 
         {marketVolume ? (
-          <div className="min-w-0 truncate text-[13px] font-medium leading-none text-zinc-500 sm:text-[14px]">
+          <div className="min-w-0 truncate text-[12px] font-medium leading-none text-zinc-500 sm:text-[13px] xl:text-[14px]">
             {marketVolume}
           </div>
         ) : null}
@@ -487,10 +487,10 @@ function GameCardHeader({ game, eventHref }: { game: Game; eventHref: string }) 
 
       <Link
         href={eventHref}
-        className="inline-flex h-8 shrink-0 items-center gap-2 rounded-xl bg-zinc-900 px-3 text-[13px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800"
+        className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg bg-zinc-900 px-2.5 text-[12px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800 xl:h-8 xl:gap-2 xl:rounded-xl xl:px-3 xl:text-[13px]"
       >
         <span>Game View</span>
-        <FaChevronRight className="h-2.5 w-2.5" />
+        <FaChevronRight className="h-2 w-2 xl:h-2.5 xl:w-2.5" />
       </Link>
     </div>
   );
@@ -536,7 +536,7 @@ function GameCard({
 
   return (
     <>
-      <article className="relative xl:hidden md:rounded-xl md:border md:border-zinc-800 md:p-3">
+      <article className="relative rounded-xl border border-zinc-800 p-2.5 xl:hidden md:p-3">
         <GameCardHeader game={game} eventHref={eventHref} />
 
         <div>
@@ -553,7 +553,7 @@ function GameCard({
           />
         </div>
 
-        <div className="mt-2.5 grid grid-cols-2 gap-3">
+        <div className="mt-2 grid grid-cols-2 gap-2.5 md:gap-3">
           <MobileMoneylineModalButton
             betData={awayBetData}
             ticker={getTeamTicker(game.away_team, game.away_team_info)}
@@ -714,7 +714,7 @@ export default function GamesClient({
                     <div key={group.key} className="grid gap-4 xl:gap-2">
                       <DateMarketHeader date={group.date} />
 
-                      <div className="grid gap-5 md:gap-3">
+                      <div className="grid gap-3 md:gap-3">
                         {group.games.map((game) => (
                           <GameCard
                             key={game.id}
