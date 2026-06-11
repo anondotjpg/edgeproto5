@@ -331,7 +331,7 @@ function MoneylineFace({
   return (
     <div
       className={[
-        "rounded-[18px]",
+        "rounded-xl",
         isLive ? "bg-zinc-900" : selected ? "bg-zinc-600" : "bg-zinc-800",
       ].join(" ")}
       style={{
@@ -340,7 +340,7 @@ function MoneylineFace({
     >
       <div
         className={[
-          "flex h-[42px] w-full translate-y-[-2px] items-center justify-center overflow-hidden rounded-[18px] border px-2.5 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0",
+          "flex h-[42px] w-full translate-y-[-2px] items-center justify-center overflow-hidden rounded-xl border px-2.5 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0",
           isLive
             ? "border-zinc-800 bg-zinc-950/80"
             : selected
@@ -364,7 +364,7 @@ function MobileMoneylineModalButton({
   return (
     <div
       className={[
-        "group relative rounded-[18px]",
+        "group relative rounded-xl",
         betData.isLive ? "bg-zinc-900" : "bg-zinc-800",
       ].join(" ")}
       style={{
@@ -374,7 +374,7 @@ function MobileMoneylineModalButton({
       <BetSlipModal
         {...betData}
         triggerClassName={[
-          "peer flex h-[42px] w-full translate-y-[-2px] cursor-pointer items-center justify-center overflow-hidden rounded-[18px] border px-3 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0",
+          "peer flex h-[42px] w-full translate-y-[-2px] cursor-pointer items-center justify-center overflow-hidden rounded-xl border px-3 text-center transition-transform duration-100 hover:translate-y-[-1px] active:translate-y-0",
           betData.isLive
             ? "border-zinc-800 bg-zinc-950/80"
             : "border-zinc-800 bg-zinc-900",
@@ -462,7 +462,7 @@ function GameCardHeader({ game, eventHref }: { game: Game; eventHref: string }) 
       <div className="flex min-w-0 items-center gap-2 xl:gap-2.5">
         <div
           className={[
-            "inline-flex h-6 shrink-0 items-center rounded-[16px] px-2.5 text-[12px] font-medium xl:h-7 xl:rounded-[18px] xl:px-3 xl:text-[13px]",
+            "inline-flex h-6 shrink-0 items-center rounded-lg px-2.5 text-[12px] font-medium xl:h-7 xl:rounded-xl xl:px-3 xl:text-[13px]",
             isLive
               ? "gap-1.5 bg-red-950/35 text-red-400"
               : "bg-zinc-900 text-zinc-100",
@@ -487,7 +487,7 @@ function GameCardHeader({ game, eventHref }: { game: Game; eventHref: string }) 
 
       <Link
         href={eventHref}
-        className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-[16px] bg-zinc-900 px-2.5 text-[12px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800 xl:h-8 xl:gap-2 xl:rounded-[18px] xl:px-3 xl:text-[13px]"
+        className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-lg bg-zinc-900 px-2.5 text-[12px] font-medium text-zinc-100 transition-colors hover:bg-zinc-800 xl:h-8 xl:gap-2 xl:rounded-xl xl:px-3 xl:text-[13px]"
       >
         <span>Game View</span>
         <FaChevronRight className="h-2 w-2 xl:h-2.5 xl:w-2.5" />
@@ -536,7 +536,7 @@ function GameCard({
 
   return (
     <>
-      <article className="relative overflow-hidden rounded-[28px] border border-zinc-800/90 bg-zinc-950/35 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)] xl:hidden md:p-3.5">
+      <article className="relative rounded-xl border border-zinc-800 p-2.5 xl:hidden md:p-3">
         <GameCardHeader game={game} eventHref={eventHref} />
 
         <div>
@@ -566,7 +566,7 @@ function GameCard({
         </div>
       </article>
 
-      <article className="relative hidden overflow-hidden xl:block xl:rounded-[28px] xl:border xl:border-zinc-800/90 xl:bg-zinc-950/35 xl:p-3.5 xl:shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
+      <article className="relative hidden xl:block xl:rounded-xl xl:border xl:border-zinc-800 xl:p-3">
         <GameCardHeader game={game} eventHref={eventHref} />
 
         <div className="grid grid-cols-[minmax(0,1fr)_84px] gap-2">
@@ -641,8 +641,7 @@ export default function GamesClient({
     });
   }, [league]);
 
-  const [selectedBet, setSelectedBet] =
-    useState<BetSlipDataWithTeamAlias | null>(firstBet);
+  const [selectedBet, setSelectedBet] = useState<BetSlipDataWithTeamAlias | null>(firstBet);
 
   const groupedGames = useMemo(() => {
     const groups: {
@@ -706,7 +705,7 @@ export default function GamesClient({
               </div>
 
               {!league || league.games.length === 0 ? (
-                <div className="rounded-[24px] border border-zinc-900 p-4 text-[13px] text-zinc-400">
+                <div className="rounded-xl border border-zinc-900 p-4 text-[13px] text-zinc-400">
                   No active {selectedLeagueMeta.label} markets right now
                 </div>
               ) : (
@@ -735,7 +734,7 @@ export default function GamesClient({
           <aside className="sticky top-18 hidden xl:block">
             <div
               className={[
-                "overflow-hidden rounded-[28px] bg-zinc-950 shadow-2xl",
+                "overflow-hidden rounded-2xl bg-zinc-950 shadow-2xl",
                 selectedBet
                   ? "border border-zinc-800"
                   : "border border-transparent",
@@ -755,4 +754,3 @@ export default function GamesClient({
     </div>
   );
 }
-///
