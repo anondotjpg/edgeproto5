@@ -61,7 +61,7 @@ export default function TopRightAuth() {
     user?.email?.address ||
     "edge-user";
 
-  const avatarColors = ["#27272a", "#d6a83a"];
+  const avatarColors = ["#18181b", "#52525b"];
 
   const signedInControls = (
     <>
