@@ -61,12 +61,27 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/splash.png" />
       </head>
 
-      <body className="relative min-h-screen bg-[#09090b] text-white">
+      <body className="relative min-h-screen overflow-x-hidden bg-[#09090b] text-white">
         <Providers>
           <style>{`
             html,
             body {
               background: #09090b;
+            }
+
+            @media (max-width: 767px) {
+              html,
+              body {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+
+              html::-webkit-scrollbar,
+              body::-webkit-scrollbar {
+                display: none;
+                width: 0;
+                height: 0;
+              }
             }
 
             @keyframes buttonShimmer {
