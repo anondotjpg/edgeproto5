@@ -12,6 +12,14 @@ function isAuthorized(req: Request) {
 }
 
 async function handleCheckCryptoDeposits(req: Request) {
+  console.log("[check-crypto-deposits] hit", {
+    at: new Date().toISOString(),
+    method: req.method,
+    hasAuthHeader: Boolean(req.headers.get("authorization")),
+    hasCronSecretEnv: Boolean(process.env.CRON_SECRET),
+    hasSolanaRpcUrl: Boolean(process.env.SOLANA_RPC_URL),
+  });
+
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -33,10 +41,13 @@ async function handleCheckCryptoDeposits(req: Request) {
     `
     )
     .eq("status", "pending")
+    .eq("chain", "solana")
     .order("created_at", { ascending: true })
-    .limit(50);
+    .limit(10);
 
   if (error) {
+    console.log("[check-crypto-deposits] invoice query error", error.message);
+
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -139,6 +150,11 @@ async function handleCheckCryptoDeposits(req: Request) {
       });
     }
   }
+
+  console.log("[check-crypto-deposits] done", {
+    checked: invoices?.length ?? 0,
+    results,
+  });
 
   return NextResponse.json({
     ok: true,
