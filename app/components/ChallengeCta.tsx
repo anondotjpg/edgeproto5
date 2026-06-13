@@ -1,19 +1,18 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import type { PlanKey } from "@/lib/plans";
 
 type ButtonStyle = "gold" | "silver" | "default";
-type DepositChain = "solana" | "ethereum" | "bitcoin";
-type DepositStep = "currency" | "fromAddress" | "deposit";
+type DepositStep = "method" | "sender" | "payment";
 
 type DepositInvoice = {
   id: string;
-  chain: DepositChain;
-  asset: "SOL" | "ETH" | "BTC";
+  chain: "solana";
+  asset: "SOL";
   deposit_address: string;
   expected_from_address: string;
   expected_amount_display: string;
@@ -24,19 +23,12 @@ type DepositInvoice = {
   credited_account_id?: string | null;
 };
 
-const DEPOSIT_CHAINS: {
-  label: string;
-  asset: "SOL" | "ETH" | "BTC";
-  value: DepositChain;
-  description: string;
-}[] = [
-  {
-    label: "Solana",
-    asset: "SOL",
-    value: "solana",
-    description: "Fastest confirmation",
-  },
-];
+type ChallengeCtaProps = {
+  cta: string;
+  buttonStyle: ButtonStyle;
+  shimmerEnabled: boolean;
+  planKey: PlanKey;
+};
 
 function getButtonShellClassName(style: ButtonStyle) {
   if (style === "gold") return "bg-[#7b5a12]";
@@ -64,11 +56,6 @@ function getShimmerClassName(style: ButtonStyle) {
   return "pointer-events-none absolute inset-y-[-35%] left-[-22%] w-[18%] skew-x-[-20deg] bg-white/35 blur-md animate-[buttonShimmer_3.4s_ease-out_infinite]";
 }
 
-function shortenAddress(address: string) {
-  if (address.length <= 14) return address;
-  return `${address.slice(0, 6)}...${address.slice(-6)}`;
-}
-
 function formatCountdown(ms: number) {
   const safeMs = Math.max(0, ms);
   const totalSeconds = Math.floor(safeMs / 1000);
@@ -83,12 +70,22 @@ function formatCountdown(ms: number) {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
+function shortenAddress(address: string) {
+  if (address.length <= 14) return address;
+  return `${address.slice(0, 6)}...${address.slice(-6)}`;
+}
+
+function getStepIndex(step: DepositStep) {
+  if (step === "method") return 0;
+  if (step === "sender") return 1;
+  return 2;
+}
+
 function StepDots({ step }: { step: DepositStep }) {
-  const activeIndex =
-    step === "currency" ? 0 : step === "fromAddress" ? 1 : 2;
+  const activeIndex = getStepIndex(step);
 
   return (
-    <div className="flex items-center justify-center gap-1.5">
+    <div className="flex items-center gap-1.5">
       {[0, 1, 2].map((index) => (
         <div
           key={index}
@@ -102,34 +99,131 @@ function StepDots({ step }: { step: DepositStep }) {
   );
 }
 
+function StatusPill({ status }: { status: DepositInvoice["status"] }) {
+  const paid = status === "paid";
+  const expired = status === "expired";
+
+  return (
+    <div
+      className={[
+        "rounded-full px-3 py-1 text-[12px] font-semibold capitalize",
+        paid
+          ? "bg-emerald-950/50 text-emerald-300"
+          : expired
+            ? "bg-red-950/50 text-red-300"
+            : "bg-zinc-900 text-zinc-300",
+      ].join(" ")}
+    >
+      {status}
+    </div>
+  );
+}
+
+function InfoCard({
+  label,
+  value,
+  action,
+}: {
+  label: string;
+  value: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-900 bg-black/30 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[12px] font-medium text-zinc-500">{label}</p>
+        {action}
+      </div>
+
+      <p className="mt-2 break-all text-[13px] leading-5 text-zinc-200">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function OffsetButton({
+  children,
+  onClick,
+  disabled,
+  className = "",
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={["rounded-2xl bg-zinc-800", className].join(" ")}
+      style={{ paddingBottom: "2px" }}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        className="h-12 w-full translate-y-[-2px] cursor-pointer rounded-2xl border border-zinc-800 bg-zinc-900 text-[15px] font-semibold text-zinc-100 transition-[transform,opacity] duration-100 hover:translate-y-[-1px] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {children}
+      </button>
+    </div>
+  );
+}
+
+function SecondaryButton({
+  children,
+  onClick,
+  disabled,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="h-12 cursor-pointer rounded-2xl border border-zinc-800 bg-zinc-950 text-[14px] font-semibold text-zinc-300 transition-colors hover:bg-zinc-900 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      {children}
+    </button>
+  );
+}
+
+async function readJsonResponse(response: Response) {
+  const text = await response.text();
+
+  try {
+    return text ? JSON.parse(text) : null;
+  } catch {
+    throw new Error(
+      `Route returned non-JSON response. Status: ${response.status}. ${text.slice(
+        0,
+        140,
+      )}`,
+    );
+  }
+}
+
 export default function ChallengeCta({
   cta,
   buttonStyle,
   shimmerEnabled,
   planKey,
-}: {
-  cta: string;
-  buttonStyle: ButtonStyle;
-  shimmerEnabled: boolean;
-  planKey: PlanKey;
-}) {
+}: ChallengeCtaProps) {
   const router = useRouter();
   const { ready, authenticated, user } = usePrivy();
   const { login } = useLogin();
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [step, setStep] = useState<DepositStep>("currency");
-  const [chain, setChain] = useState<DepositChain>("solana");
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<DepositStep>("method");
   const [fromAddress, setFromAddress] = useState("");
   const [invoice, setInvoice] = useState<DepositInvoice | null>(null);
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(() => Date.now());
-
-  const selectedChain = useMemo(
-    () => DEPOSIT_CHAINS.find((item) => item.value === chain),
-    [chain]
-  );
 
   const privyUserId = user?.id ?? null;
   const email = user?.email?.address ?? null;
@@ -143,29 +237,28 @@ export default function ChallengeCta({
     ? new Date(invoice.expires_at).getTime()
     : null;
 
-  const remainingMs = expiresAtMs ? expiresAtMs - nowMs : 0;
-  const countdown = formatCountdown(remainingMs);
+  const countdown = formatCountdown(expiresAtMs ? expiresAtMs - nowMs : 0);
 
-  const sharedClassName = [
+  const ctaClassName = [
     "relative inline-flex h-11 w-full cursor-pointer items-center justify-center overflow-hidden rounded-[16px] px-4 text-[15px] font-semibold transition-transform duration-100 hover:translate-y-px active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70",
     getButtonFaceClassName(buttonStyle),
   ].join(" ");
 
-  const sharedStyle = {
+  const ctaStyle = {
     transform: "translateY(-2px)",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
   } as const;
 
-  function resetDepositFlow() {
-    setStep("currency");
-    setChain("solana");
+  function resetFlow() {
+    setStep("method");
     setFromAddress("");
     setInvoice(null);
     setError(null);
+    setCopied(null);
     setIsCreatingInvoice(false);
   }
 
-  async function handleClick() {
+  function openCheckout() {
     if (!ready) return;
 
     if (!authenticated) {
@@ -173,12 +266,23 @@ export default function ChallengeCta({
       return;
     }
 
-    resetDepositFlow();
-    setModalOpen(true);
+    resetFlow();
+    setOpen(true);
+  }
+
+  function closeCheckout() {
+    setOpen(false);
   }
 
   async function createInvoice() {
     if (!privyUserId || isCreatingInvoice) return;
+
+    const cleanFromAddress = fromAddress.trim();
+
+    if (!cleanFromAddress) {
+      setError("Paste the wallet address you will send from.");
+      return;
+    }
 
     try {
       setIsCreatingInvoice(true);
@@ -191,70 +295,79 @@ export default function ChallengeCta({
         },
         body: JSON.stringify({
           planKey,
-          chain,
-          fromAddress,
+          chain: "solana",
+          fromAddress: cleanFromAddress,
           privyUserId,
           email,
           walletAddress,
         }),
       });
 
-      const data = await response.json();
+      const data = await readJsonResponse(response);
 
       if (!response.ok) {
         throw new Error(data?.error || "Unable to create deposit invoice.");
       }
 
+      if (!data?.invoice) {
+        throw new Error("Deposit invoice was not returned.");
+      }
+
       setInvoice(data.invoice);
-      setStep("deposit");
+      setStep("payment");
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : "Unable to create deposit."
+        error instanceof Error ? error.message : "Unable to create deposit.",
       );
     } finally {
       setIsCreatingInvoice(false);
     }
   }
 
-  async function copyText(value: string) {
+  async function copyText(label: string, value: string) {
     try {
       await navigator.clipboard.writeText(value);
+      setCopied(label);
+
+      window.setTimeout(() => {
+        setCopied(null);
+      }, 1200);
     } catch {
       setError("Unable to copy. Please copy it manually.");
     }
   }
 
   useEffect(() => {
-    if (!modalOpen) return;
+    if (!open) return;
 
     const interval = window.setInterval(() => {
       setNowMs(Date.now());
     }, 1000);
 
     return () => window.clearInterval(interval);
-  }, [modalOpen]);
+  }, [open]);
 
   useEffect(() => {
-    if (!modalOpen || !invoice?.id || !privyUserId) return;
+    if (!open || !invoice?.id || !privyUserId) return;
     if (invoice.status === "paid" || invoice.status === "expired") return;
 
     const pollInvoice = async () => {
       try {
         const response = await fetch(
           `/api/crypto-deposits/${invoice.id}?privyUserId=${encodeURIComponent(
-            privyUserId
-          )}`
+            privyUserId,
+          )}`,
         );
 
-        const data = await response.json();
+        const data = await readJsonResponse(response);
 
-        if (!response.ok) return;
+        if (!response.ok || !data?.invoice) return;
 
         setInvoice(data.invoice);
 
         if (
-          data.invoice?.status === "paid" &&
-          data.invoice?.credited_account_id
+          data.invoice.status === "paid" &&
+          data.invoice.credited_account_id
         ) {
           router.refresh();
         }
@@ -268,7 +381,7 @@ export default function ChallengeCta({
     const interval = window.setInterval(pollInvoice, 5000);
 
     return () => window.clearInterval(interval);
-  }, [invoice?.id, invoice?.status, modalOpen, privyUserId, router]);
+  }, [open, invoice?.id, invoice?.status, privyUserId, router]);
 
   return (
     <>
@@ -281,10 +394,10 @@ export default function ChallengeCta({
       >
         <button
           type="button"
-          onClick={handleClick}
+          onClick={openCheckout}
           disabled={!ready}
-          className={sharedClassName}
-          style={sharedStyle}
+          className={ctaClassName}
+          style={ctaStyle}
         >
           {shimmerEnabled ? (
             <span
@@ -297,342 +410,287 @@ export default function ChallengeCta({
         </button>
       </div>
 
-      <AnimatePresence>
-        {modalOpen ? (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 px-4 pb-4 pt-12 backdrop-blur-md sm:items-center sm:p-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onMouseDown={(event) => {
-              if (event.target === event.currentTarget) {
-                setModalOpen(false);
-              }
-            }}
-          >
-            <motion.div
-              className="w-full max-w-[430px] overflow-hidden rounded-[28px] border border-zinc-800 bg-[#09090b] text-white shadow-2xl"
-              initial={{ opacity: 0, y: 28, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 24, scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 330, damping: 30 }}
-              onMouseDown={(event) => event.stopPropagation()}
-            >
-              <div className="border-b border-zinc-900 px-5 py-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[12px] font-medium uppercase tracking-[0.16em] text-zinc-500">
-                      Edge checkout
-                    </p>
+      {open ? (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center overflow-hidden bg-black/75 px-4 pb-4 sm:items-center sm:pb-0">
+          <button
+            type="button"
+            aria-label="Close checkout"
+            className="absolute inset-0 cursor-pointer"
+            onClick={closeCheckout}
+          />
 
-                    <h2 className="mt-1 text-[22px] font-semibold leading-tight tracking-tight text-zinc-50">
-                      Start challenge
-                    </h2>
-                  </div>
+          <div className="relative w-full max-w-[520px] overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950 p-5 text-white shadow-2xl">
+            <div>
+              <p className="text-[12px] font-medium uppercase tracking-[0.16em] text-zinc-500">
+                Edge checkout
+              </p>
 
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-[18px] leading-none text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
-                    aria-label="Close deposit modal"
-                  >
-                    ×
-                  </button>
-                </div>
+              <h2 className="mt-1 text-[24px] font-semibold leading-tight tracking-tight text-zinc-50">
+                Start challenge
+              </h2>
+            </div>
 
-                <div className="mt-4">
-                  <StepDots step={step} />
-                </div>
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <StepDots step={step} />
+
+              <div className="text-[12px] font-medium text-zinc-500">
+                Step {getStepIndex(step) + 1} of 3
               </div>
+            </div>
 
-              <div className="relative min-h-[420px] px-5 py-5">
-                <AnimatePresence mode="wait">
-                  {step === "currency" ? (
-                    <motion.div
-                      key="currency"
-                      initial={{ opacity: 0, x: 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -24 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex min-h-[390px] flex-col"
+            <div className="mt-5 min-h-[390px]">
+              <AnimatePresence mode="wait">
+                {step === "method" ? (
+                  <motion.div
+                    key="method"
+                    initial={{ opacity: 0, x: 18 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -18 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="flex min-h-[390px] flex-col"
+                  >
+                    <div>
+                      <h3 className="text-[18px] font-semibold tracking-tight text-zinc-50">
+                        Choose payment method
+                      </h3>
+
+                      <p className="mt-1 text-[13px] leading-5 text-zinc-500">
+                        Pay with SOL. Your deposit amount will be locked for 3
+                        hours after the next step.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setStep("sender")}
+                      className="mt-5 flex w-full cursor-pointer items-center justify-between rounded-2xl border border-zinc-800 bg-black/30 px-4 py-3.5 text-left transition-colors hover:bg-zinc-900"
                     >
-                      <div>
-                        <h3 className="text-[18px] font-semibold tracking-tight text-zinc-50">
-                          Choose deposit currency
-                        </h3>
-
-                        <p className="mt-1 text-[13px] leading-5 text-zinc-500">
-                          Pick the crypto you want to use. The next step locks a
-                          fixed deposit amount for 3 hours.
-                        </p>
-                      </div>
-
-                      <div className="mt-5 grid gap-2">
-                        {DEPOSIT_CHAINS.map((item) => {
-                          const selected = item.value === chain;
-
-                          return (
-                            <button
-                              key={item.value}
-                              type="button"
-                              onClick={() => setChain(item.value)}
-                              className={[
-                                "flex items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition-colors",
-                                selected
-                                  ? "border-zinc-500 bg-zinc-900"
-                                  : "border-zinc-900 bg-zinc-950 hover:border-zinc-800 hover:bg-zinc-900/70",
-                              ].join(" ")}
-                            >
-                              <div>
-                                <div className="text-[15px] font-semibold text-zinc-100">
-                                  {item.asset}
-                                </div>
-
-                                <div className="mt-0.5 text-[12px] text-zinc-500">
-                                  {item.description}
-                                </div>
-                              </div>
-
-                              <div
-                                className={[
-                                  "flex h-7 min-w-7 items-center justify-center rounded-full border text-[11px] font-bold",
-                                  selected
-                                    ? "border-zinc-300 bg-zinc-100 text-zinc-950"
-                                    : "border-zinc-800 text-zinc-500",
-                                ].join(" ")}
-                              >
-                                {item.asset}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-auto pt-5">
-                        <button
-                          type="button"
-                          onClick={() => setStep("fromAddress")}
-                          className="h-12 w-full rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-colors hover:bg-white"
-                        >
-                          Continue
-                        </button>
-                      </div>
-                    </motion.div>
-                  ) : null}
-
-                  {step === "fromAddress" ? (
-                    <motion.div
-                      key="fromAddress"
-                      initial={{ opacity: 0, x: 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -24 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex min-h-[390px] flex-col"
-                    >
-                      <div>
-                        <h3 className="text-[18px] font-semibold tracking-tight text-zinc-50">
-                          Sending address
-                        </h3>
-
-                        <p className="mt-1 text-[13px] leading-5 text-zinc-500">
-                          Paste the {selectedChain?.asset} address you will send
-                          from. The deposit must come from this exact address.
-                        </p>
-                      </div>
-
-                      <div className="mt-5 rounded-2xl border border-zinc-900 bg-zinc-950 p-4">
-                        <label className="text-[12px] font-medium text-zinc-500">
-                          Sending from
-                        </label>
-
-                        <input
-                          value={fromAddress}
-                          onChange={(event) =>
-                            setFromAddress(event.target.value)
-                          }
-                          placeholder={`Paste ${selectedChain?.asset} wallet address`}
-                          className="mt-2 h-12 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-[14px] text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-zinc-600"
+                      <div className="flex min-w-0 items-center gap-3">
+                        <img
+                          src="/sol.png"
+                          alt="SOL"
+                          className="h-9 w-9 shrink-0 rounded-full object-contain"
                         />
 
-                        <p className="mt-3 text-[12px] leading-5 text-zinc-600">
-                          Do not send from Coinbase, Binance, or another
-                          exchange if you require exact sender-address matching.
+                        <div className="min-w-0">
+                          <div className="text-[15px] font-semibold text-zinc-100">
+                            Solana
+                          </div>
+
+                          <div className="mt-0.5 text-[12px] text-zinc-500">
+                            Fast confirmation with SOL
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1 text-[12px] font-bold text-zinc-300">
+                        SOL
+                      </div>
+                    </button>
+
+                    <div className="mt-auto pt-5">
+                      <OffsetButton onClick={() => setStep("sender")}>
+                        Continue
+                      </OffsetButton>
+                    </div>
+                  </motion.div>
+                ) : null}
+
+                {step === "sender" ? (
+                  <motion.div
+                    key="sender"
+                    initial={{ opacity: 0, x: 18 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -18 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="flex min-h-[390px] flex-col"
+                  >
+                    <div>
+                      <h3 className="text-[18px] font-semibold tracking-tight text-zinc-50">
+                        Sending wallet
+                      </h3>
+
+                      <p className="mt-1 text-[13px] leading-5 text-zinc-500">
+                        Paste the Solana wallet address you will send from. The
+                        payment must come from this address.
+                      </p>
+                    </div>
+
+                    <div className="mt-5 rounded-2xl border border-zinc-900 bg-black/30 p-4">
+                      <label className="text-[12px] font-medium text-zinc-500">
+                        Sending from
+                      </label>
+
+                      <input
+                        value={fromAddress}
+                        onChange={(event) => setFromAddress(event.target.value)}
+                        placeholder="Paste SOL wallet address"
+                        className="mt-2 h-12 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-[14px] text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-zinc-600"
+                      />
+
+                      <p className="mt-3 text-[12px] leading-5 text-zinc-600">
+                        Do not send from Coinbase, Binance, or another exchange
+                        if sender-address matching is required.
+                      </p>
+                    </div>
+
+                    {error ? (
+                      <div className="mt-3 rounded-2xl border border-red-950 bg-red-950/30 px-4 py-3 text-[13px] leading-5 text-red-300">
+                        {error}
+                      </div>
+                    ) : null}
+
+                    <div className="mt-auto grid grid-cols-[96px_minmax(0,1fr)] gap-2 pt-5">
+                      <SecondaryButton
+                        onClick={() => {
+                          setError(null);
+                          setStep("method");
+                        }}
+                      >
+                        Back
+                      </SecondaryButton>
+
+                      <OffsetButton
+                        onClick={createInvoice}
+                        disabled={!fromAddress.trim() || isCreatingInvoice}
+                      >
+                        {isCreatingInvoice ? "Creating..." : "Create deposit"}
+                      </OffsetButton>
+                    </div>
+                  </motion.div>
+                ) : null}
+
+                {step === "payment" && invoice ? (
+                  <motion.div
+                    key="payment"
+                    initial={{ opacity: 0, x: 18 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -18 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="flex min-h-[390px] flex-col"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-[18px] font-semibold tracking-tight text-zinc-50">
+                          Send SOL deposit
+                        </h3>
+
+                        <p className="mt-1 text-[13px] leading-5 text-zinc-500">
+                          Send the exact amount below before the timer expires.
                         </p>
                       </div>
 
-                      {error ? (
-                        <div className="mt-3 rounded-2xl border border-red-950 bg-red-950/30 px-4 py-3 text-[13px] text-red-300">
-                          {error}
-                        </div>
-                      ) : null}
+                      <StatusPill status={invoice.status} />
+                    </div>
 
-                      <div className="mt-auto grid grid-cols-[96px_minmax(0,1fr)] gap-2 pt-5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setError(null);
-                            setStep("currency");
-                          }}
-                          className="h-12 rounded-2xl bg-zinc-900 text-[14px] font-semibold text-zinc-300 transition-colors hover:bg-zinc-800"
-                        >
-                          Back
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={createInvoice}
-                          disabled={!fromAddress.trim() || isCreatingInvoice}
-                          className="h-12 rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          {isCreatingInvoice
-                            ? "Creating..."
-                            : "Create deposit"}
-                        </button>
-                      </div>
-                    </motion.div>
-                  ) : null}
-
-                  {step === "deposit" && invoice ? (
-                    <motion.div
-                      key="deposit"
-                      initial={{ opacity: 0, x: 24 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -24 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex min-h-[390px] flex-col"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <h3 className="text-[18px] font-semibold tracking-tight text-zinc-50">
-                            Send deposit
-                          </h3>
-
-                          <p className="mt-1 text-[13px] leading-5 text-zinc-500">
-                            Send the exact amount before the timer expires.
-                          </p>
-                        </div>
-
-                        <div
-                          className={[
-                            "rounded-full px-3 py-1 text-[12px] font-semibold capitalize",
-                            invoice.status === "paid"
-                              ? "bg-emerald-950/50 text-emerald-300"
-                              : invoice.status === "expired"
-                                ? "bg-red-950/50 text-red-300"
-                                : "bg-zinc-900 text-zinc-300",
-                          ].join(" ")}
-                        >
-                          {invoice.status}
-                        </div>
-                      </div>
-
-                      <div className="mt-5 grid gap-3">
-                        <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <div className="mt-5 grid gap-3">
+                      <div className="rounded-2xl border border-zinc-800 bg-black/30 p-4">
+                        <div className="flex items-center justify-between gap-3">
                           <p className="text-[12px] font-medium text-zinc-500">
                             Send exactly
                           </p>
 
-                          <div className="mt-1 flex items-end justify-between gap-3">
-                            <p className="break-all text-[24px] font-semibold leading-tight tracking-tight text-zinc-50">
-                              {invoice.expected_amount_display}
-                            </p>
-
-                            <p className="pb-1 text-[13px] font-bold text-zinc-400">
-                              {invoice.asset}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl border border-zinc-900 bg-zinc-950 p-4">
-                          <div className="flex items-center justify-between gap-3">
-                            <p className="text-[12px] font-medium text-zinc-500">
-                              Deposit address
-                            </p>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                copyText(invoice.deposit_address)
-                              }
-                              className="text-[12px] font-semibold text-zinc-300 hover:text-white"
-                            >
-                              Copy
-                            </button>
-                          </div>
-
-                          <p className="mt-2 break-all text-[13px] leading-5 text-zinc-200">
-                            {invoice.deposit_address}
-                          </p>
-                        </div>
-
-                        <div className="rounded-2xl border border-zinc-900 bg-zinc-950 p-4">
-                          <p className="text-[12px] font-medium text-zinc-500">
-                            Required sending address
-                          </p>
-
-                          <p className="mt-2 break-all text-[13px] leading-5 text-zinc-300">
-                            {invoice.expected_from_address}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="rounded-2xl bg-zinc-950 p-4">
-                            <p className="text-[12px] font-medium text-zinc-500">
-                              Time left
-                            </p>
-
-                            <p className="mt-1 text-[18px] font-semibold text-zinc-100">
-                              {invoice.status === "paid"
-                                ? "Complete"
-                                : invoice.status === "expired"
-                                  ? "Expired"
-                                  : countdown}
-                            </p>
-                          </div>
-
-                          <div className="rounded-2xl bg-zinc-950 p-4">
-                            <p className="text-[12px] font-medium text-zinc-500">
-                              Confirmations
-                            </p>
-
-                            <p className="mt-1 text-[18px] font-semibold text-zinc-100">
-                              {invoice.confirmations ?? 0}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {invoice.status === "paid" &&
-                      invoice.credited_account_id ? (
-                        <div className="mt-auto pt-5">
                           <button
                             type="button"
                             onClick={() =>
-                              router.push(
-                                `/accounts/${invoice.credited_account_id}`
+                              copyText(
+                                "amount",
+                                invoice.expected_amount_display,
                               )
                             }
-                            className="h-12 w-full rounded-2xl bg-zinc-100 text-[15px] font-semibold text-zinc-950 transition-colors hover:bg-white"
+                            className="cursor-pointer text-[12px] font-semibold text-zinc-300 hover:text-white"
                           >
-                            Open account
+                            {copied === "amount" ? "Copied" : "Copy"}
                           </button>
                         </div>
-                      ) : (
-                        <div className="mt-auto pt-5">
-                          <p className="text-center text-[12px] leading-5 text-zinc-600">
-                            Waiting for {invoice.asset} payment from{" "}
-                            {shortenAddress(invoice.expected_from_address)}.
+
+                        <div className="mt-2 flex items-end justify-between gap-3">
+                          <p className="break-all text-[28px] font-semibold leading-none tracking-tight text-zinc-50">
+                            {invoice.expected_amount_display}
+                          </p>
+
+                          <p className="pb-0.5 text-[13px] font-bold text-zinc-400">
+                            SOL
                           </p>
                         </div>
-                      )}
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                      </div>
+
+                      <InfoCard
+                        label="Deposit address"
+                        value={invoice.deposit_address}
+                        action={
+                          <button
+                            type="button"
+                            onClick={() =>
+                              copyText("deposit", invoice.deposit_address)
+                            }
+                            className="cursor-pointer text-[12px] font-semibold text-zinc-300 hover:text-white"
+                          >
+                            {copied === "deposit" ? "Copied" : "Copy"}
+                          </button>
+                        }
+                      />
+
+                      <InfoCard
+                        label="Required sending address"
+                        value={invoice.expected_from_address}
+                      />
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-2xl border border-zinc-900 bg-black/30 p-4">
+                          <p className="text-[12px] font-medium text-zinc-500">
+                            Time left
+                          </p>
+
+                          <p className="mt-1 text-[18px] font-semibold text-zinc-100">
+                            {invoice.status === "paid"
+                              ? "Complete"
+                              : invoice.status === "expired"
+                                ? "Expired"
+                                : countdown}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-zinc-900 bg-black/30 p-4">
+                          <p className="text-[12px] font-medium text-zinc-500">
+                            Confirmations
+                          </p>
+
+                          <p className="mt-1 text-[18px] font-semibold text-zinc-100">
+                            {invoice.confirmations ?? 0}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {invoice.status === "paid" &&
+                    invoice.credited_account_id ? (
+                      <div className="mt-auto pt-5">
+                        <OffsetButton
+                          onClick={() =>
+                            router.push(
+                              `/accounts/${invoice.credited_account_id}`,
+                            )
+                          }
+                        >
+                          Open account
+                        </OffsetButton>
+                      </div>
+                    ) : (
+                      <div className="mt-auto pt-5">
+                        <p className="text-center text-[12px] leading-5 text-zinc-600">
+                          Waiting for SOL from{" "}
+                          {shortenAddress(invoice.expected_from_address)}.
+                        </p>
+                      </div>
+                    )}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
