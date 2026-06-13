@@ -96,6 +96,14 @@ function getTodayNewYorkDate() {
   }).format(new Date());
 }
 
+function hasPositiveAccountValue(value: unknown) {
+  return Number(value ?? 0) > 0;
+}
+
+function hasNonZeroAccountValue(value: unknown) {
+  return Number(value ?? 0) !== 0;
+}
+
 function getBetPnl(bet: BetRow) {
   if (bet.status === "won") return Number(bet.potential_profit ?? 0);
   if (bet.status === "lost") return -Number(bet.stake ?? 0);
@@ -439,6 +447,8 @@ function RuleRoomCard({
     limit > 0
       ? Math.min(Math.max(((limit - safeRoom) / limit) * 100, 0), 100)
       : 0;
+
+  const healthLabel = getHealthLabel(room, limit);
 
   return (
     <div className="flex min-h-[154px] flex-col rounded-[22px] bg-zinc-950/80 px-3 py-4 ring-1 ring-zinc-900 sm:min-h-[166px] sm:rounded-[26px] sm:px-5">
@@ -835,25 +845,24 @@ export default async function AccountPage({ params }: AccountPageProps) {
   }
 
   const accountStatus = String(account.status);
+  const isActuallyFunded = accountStatus === "funded";
+  const isAccountFailed = accountStatus === "failed";
 
-  const hasFundedAvailable =
-    account.funded_started_at !== null &&
-    account.funded_started_at !== undefined
-      ? true
-      : account.funded_starting_balance !== null &&
-          account.funded_starting_balance !== undefined
-        ? true
-        : account.funded_current_balance !== null &&
-            account.funded_current_balance !== undefined
-          ? true
-          : account.funded_reserved_risk !== null &&
-              account.funded_reserved_risk !== undefined;
+  const hasFundedLifecycleData =
+    Boolean(account.funded_at) ||
+    Boolean(account.funded_started_at) ||
+    Boolean(account.passed_at);
 
-  const isFunded =
-    accountStatus === "funded" ||
-    (accountStatus === "failed" && hasFundedAvailable);
+  const hasFundedBalanceData =
+    hasPositiveAccountValue(account.funded_starting_balance) ||
+    hasPositiveAccountValue(account.funded_current_balance) ||
+    hasPositiveAccountValue(account.funded_reserved_risk) ||
+    hasNonZeroAccountValue(account.funded_realized_pnl);
 
-  const currentStage = isFunded ? "funded" : "challenge";
+  const shouldDisplayFundedData =
+    isActuallyFunded || (isAccountFailed && (hasFundedLifecycleData || hasFundedBalanceData));
+
+  const currentStage = shouldDisplayFundedData ? "funded" : "challenge";
 
   const today = getTodayNewYorkDate();
 
@@ -902,7 +911,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
   const plan = PLAN_CONFIG[account.plan_key as PlanKey];
 
-  const startingBalance = isFunded
+  const startingBalance = shouldDisplayFundedData
     ? Number(
         account.funded_starting_balance ??
           account.starting_balance ??
@@ -911,40 +920,40 @@ export default async function AccountPage({ params }: AccountPageProps) {
       )
     : Number(account.starting_balance ?? account.plan_size ?? 0);
 
-  const currentBalance = isFunded
+  const currentBalance = shouldDisplayFundedData
     ? Number(account.funded_current_balance ?? startingBalance)
     : Number(account.current_balance ?? 0);
 
-  const reservedRisk = isFunded
+  const reservedRisk = shouldDisplayFundedData
     ? Number(account.funded_reserved_risk ?? 0)
     : Number(account.reserved_risk ?? 0);
 
-  const realizedPnl = isFunded
+  const realizedPnl = shouldDisplayFundedData
     ? Number(account.funded_realized_pnl ?? 0)
     : Number(account.realized_pnl ?? 0);
 
   const ruleEquity = currentBalance + reservedRisk;
 
   const profitTargetPercent = Number(account.profit_target_percent ?? 30);
-  const dailyDrawdownPercent = isFunded
+  const dailyDrawdownPercent = shouldDisplayFundedData
     ? 4
     : Number(account.daily_drawdown_percent ?? 10);
-  const totalDrawdownPercent = isFunded
+  const totalDrawdownPercent = shouldDisplayFundedData
     ? 10
     : Number(account.total_drawdown_percent ?? 20);
 
-  const profitTargetBalance = isFunded
+  const profitTargetBalance = shouldDisplayFundedData
     ? startingBalance
     : startingBalance * (1 + profitTargetPercent / 100);
 
   const maxRiskAmount = Number(
-    isFunded
+    shouldDisplayFundedData
       ? (account.funded_max_risk_amount ?? startingBalance * 0.02)
       : (account.max_risk_amount ?? startingBalance * 0.05),
   );
 
   const dailyLossLimit = Number(
-    isFunded
+    shouldDisplayFundedData
       ? (account.funded_daily_loss_limit_amount ??
           startingBalance * (dailyDrawdownPercent / 100))
       : (account.daily_loss_limit_amount ??
@@ -952,7 +961,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
   );
 
   const totalLossLimit = Number(
-    isFunded
+    shouldDisplayFundedData
       ? (account.funded_total_loss_limit_amount ??
           startingBalance * (totalDrawdownPercent / 100))
       : (account.total_loss_limit_amount ??
@@ -995,12 +1004,12 @@ export default async function AccountPage({ params }: AccountPageProps) {
 
   const pageTitle =
     accountName ||
-    `${fallbackAccountTitle} ${isFunded ? "Funded" : "Challenge"}`;
+    `${fallbackAccountTitle} ${
+      shouldDisplayFundedData ? "Funded" : "Challenge"
+    }`;
 
   const dailyRoom = ruleEquity - dailyFloor;
   const totalRoom = ruleEquity - totalFloor;
-
-  const isAccountFailed = accountStatus === "failed" && !hasFundedAvailable;
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white">
@@ -1009,7 +1018,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
           <div
             className={[
               "grid items-stretch gap-3",
-              isFunded ? "" : "lg:grid-cols-2",
+              shouldDisplayFundedData ? "" : "lg:grid-cols-2",
             ].join(" ")}
           >
             <div className="flex min-h-[142px] min-w-0 flex-col justify-between overflow-visible lg:min-h-[166px]">
@@ -1045,7 +1054,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
               </div>
             </div>
 
-            {!isFunded ? (
+            {!shouldDisplayFundedData ? (
               <div className="flex min-h-[132px] flex-col rounded-[26px] bg-zinc-950/80 px-4 py-4 ring-1 ring-zinc-900 sm:min-h-[166px] sm:px-5 lg:ring-0">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
