@@ -60,29 +60,15 @@ function normalizeChartColor(color: string | null | undefined, fallback: string)
 
   if (!clean) return fallback;
 
-  if (/^#[0-9a-fA-F]{3}$/.test(clean)) {
-    return clean;
-  }
+  if (/^#[0-9a-fA-F]{3}$/.test(clean)) return clean;
+  if (/^#[0-9a-fA-F]{6}$/.test(clean)) return clean;
+  if (/^#[0-9a-fA-F]{8}$/.test(clean)) return clean;
 
-  if (/^#[0-9a-fA-F]{6}$/.test(clean)) {
-    return clean;
-  }
+  if (/^[0-9a-fA-F]{3}$/.test(clean)) return `#${clean}`;
+  if (/^[0-9a-fA-F]{6}$/.test(clean)) return `#${clean}`;
+  if (/^[0-9a-fA-F]{8}$/.test(clean)) return `#${clean}`;
 
-  if (/^#[0-9a-fA-F]{8}$/.test(clean)) {
-    return clean;
-  }
-
-  if (/^[0-9a-fA-F]{3}$/.test(clean)) {
-    return `#${clean}`;
-  }
-
-  if (/^[0-9a-fA-F]{6}$/.test(clean)) {
-    return `#${clean}`;
-  }
-
-  if (/^[0-9a-fA-F]{8}$/.test(clean)) {
-    return `#${clean}`;
-  }
+  if (/^(rgb|rgba|hsl|hsla)\(/i.test(clean)) return clean;
 
   return fallback;
 }
@@ -127,6 +113,38 @@ function EndDot(props: EndDotProps) {
         fill="freeze"
       />
     </circle>
+  );
+}
+
+function ChartLegend({
+  awayLabel,
+  homeLabel,
+  awayStroke,
+  homeStroke,
+}: {
+  awayLabel?: string;
+  homeLabel?: string;
+  awayStroke: string;
+  homeStroke: string;
+}) {
+  return (
+    <div className="mt-1 flex items-center justify-center gap-4 text-[12px] font-medium text-zinc-300">
+      <div className="flex items-center gap-1.5">
+        <span
+          className="h-[2px] w-4 rounded-full"
+          style={{ backgroundColor: awayStroke }}
+        />
+        <span>{awayLabel || "Away"}</span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <span
+          className="h-[2px] w-4 rounded-full"
+          style={{ backgroundColor: homeStroke }}
+        />
+        <span>{homeLabel || "Home"}</span>
+      </div>
+    </div>
   );
 }
 
@@ -283,10 +301,15 @@ export default function PriceHistoryChart({
                   />
 
                   <Legend
-                    wrapperStyle={{
-                      color: "#a1a1aa",
-                      fontSize: 12,
-                    }}
+                    verticalAlign="bottom"
+                    content={
+                      <ChartLegend
+                        awayLabel={data?.away.label}
+                        homeLabel={data?.home.label}
+                        awayStroke={awayStroke}
+                        homeStroke={homeStroke}
+                      />
+                    }
                   />
 
                   <Line
@@ -298,6 +321,7 @@ export default function PriceHistoryChart({
                     dot={<EndDot />}
                     activeDot={false}
                     connectNulls
+                    isAnimationActive
                   />
 
                   <Line
@@ -309,6 +333,7 @@ export default function PriceHistoryChart({
                     dot={<EndDot />}
                     activeDot={false}
                     connectNulls
+                    isAnimationActive
                   />
                 </LineChart>
               </ResponsiveContainer>
