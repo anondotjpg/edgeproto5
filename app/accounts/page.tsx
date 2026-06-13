@@ -56,6 +56,37 @@ const PLAN_DETAILS: PlanDetail[] = [
   { label: "Max Risk/Trade", value: "5%" },
 ];
 
+function DotPatternBackground() {
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 hidden overflow-hidden md:block"
+    >
+      <div
+        className="absolute inset-0 opacity-[0.18]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(255,255,255,0.42) 1px, transparent 1px)",
+          backgroundSize: "15px 15px",
+          backgroundPosition: "center",
+          WebkitMaskImage:
+            "radial-gradient(ellipse at 50% 0%, black 0%, black 26%, rgba(0,0,0,0.55) 44%, transparent 72%)",
+          maskImage:
+            "radial-gradient(ellipse at 50% 0%, black 0%, black 26%, rgba(0,0,0,0.55) 44%, transparent 72%)",
+        }}
+      />
+
+      <div
+        className="absolute inset-0 opacity-[0.032]"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.55), transparent 54%)",
+        }}
+      />
+    </div>
+  );
+}
+
 function DetailRow({
   label,
   value,
@@ -235,13 +266,15 @@ export default function AccountsPage() {
         }
       `}</style>
 
-      <div className="relative min-h-screen bg-transparent text-white">
+      <div className="relative min-h-screen overflow-hidden bg-[#09090b] text-white">
+        <DotPatternBackground />
+
         <div className="relative z-10 flex min-h-screen items-center pt-10 lg:pt-0">
           <div className="mx-auto w-full max-w-[1480px] px-5 py-8 pb-24 sm:px-6 md:pb-8">
             <OwnedAccountsSection />
 
             <div className="mb-7 hidden text-center sm:mb-10 md:block">
-              <h1 className="text-[30px] font-semibold tracking-tight text-zinc-100 sm:text-[38px] italic">
+              <h1 className="text-[30px] font-semibold italic tracking-tight text-zinc-100 sm:text-[38px]">
                 Find Your Edge
               </h1>
               <p className="text-[15px] text-zinc-500 sm:text-[16px]">
@@ -251,7 +284,10 @@ export default function AccountsPage() {
 
             <div className="grid gap-7 sm:gap-5 md:grid-cols-2 md:justify-center xl:grid-cols-4">
               {ACCOUNT_PLANS.map((plan) => (
-                <div key={plan.planKey} className="w-full md:mx-auto md:max-w-[340px]">
+                <div
+                  key={plan.planKey}
+                  className="w-full md:mx-auto md:max-w-[340px]"
+                >
                   <AccountCard {...plan} />
                 </div>
               ))}
