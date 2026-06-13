@@ -144,11 +144,14 @@ function MiniGoalProgressBar({
             <div
               data-tone={tone}
               className="owned-mini-goal-cover absolute inset-0 rounded-full bg-zinc-950"
-              style={{
-                opacity: overlayOpacity,
-                transitionDelay:
-                  tone === "goal" ? `${Math.min(index * 18, 150)}ms` : "0ms",
-              }}
+              style={
+                {
+                  opacity: overlayOpacity,
+                  "--owned-mini-goal-cover-opacity": overlayOpacity,
+                  "--owned-mini-goal-delay":
+                    tone === "goal" ? `${Math.min(index * 22, 180)}ms` : "0ms",
+                } as React.CSSProperties
+              }
             />
           </div>
         );
@@ -391,16 +394,22 @@ export default function OwnedAccountsSection() {
           }
         }
 
+        @keyframes ownedMiniGoalReplay {
+          0% {
+            opacity: 0.72;
+          }
+          100% {
+            opacity: var(--owned-mini-goal-cover-opacity);
+          }
+        }
+
         .owned-accounts-reveal {
           animation: ownedAccountsReveal 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
-        .owned-mini-goal-cover {
-          transition: opacity 900ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
         .group:hover .owned-mini-goal-cover[data-tone="goal"] {
-          opacity: 0 !important;
+          animation: ownedMiniGoalReplay 760ms cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation-delay: var(--owned-mini-goal-delay);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -409,7 +418,7 @@ export default function OwnedAccountsSection() {
           }
 
           .owned-mini-goal-cover {
-            transition: none !important;
+            animation: none !important;
           }
         }
       `}</style>
