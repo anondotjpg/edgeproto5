@@ -100,11 +100,11 @@ function getCardBorderClassName(style: ButtonStyle) {
 
 function getCardGlowClassName(style: ButtonStyle) {
   if (style === "gold") {
-    return "absolute inset-[-1px] rounded-[24px] shadow-[0_0_30px_rgba(224,184,75,0.22),0_0_60px_rgba(224,184,75,0.1)]";
+    return "absolute inset-[-1px] rounded-[24px] shadow-[0_0_30px_rgba(224,184,75,0.11),0_0_60px_rgba(224,184,75,0.05)]";
   }
 
   if (style === "silver") {
-    return "absolute inset-[-1px] rounded-[24px] shadow-[0_0_28px_rgba(255,255,255,0.16),0_0_56px_rgba(161,161,170,0.12)]";
+    return "absolute inset-[-1px] rounded-[24px] shadow-[0_0_28px_rgba(255,255,255,0.08),0_0_56px_rgba(161,161,170,0.06)]";
   }
 
   return "";
