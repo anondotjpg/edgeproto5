@@ -27,6 +27,49 @@ type EligibleGameRow = {
   debug?: unknown | null;
 };
 
+type TeamInfo = {
+  name: string;
+  abbreviation?: string;
+  alias?: string;
+  record?: string;
+  logo?: string;
+  color?: string;
+  league?: string;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function isValidHexColor(value: unknown) {
+  return (
+    typeof value === "string" &&
+    /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+  );
+}
+
+function normalizeTeamInfo(value: unknown, fallbackName: string): TeamInfo {
+  if (!isRecord(value)) {
+    return {
+      name: fallbackName,
+    };
+  }
+
+  return {
+    name: getString(value.name) ?? fallbackName,
+    abbreviation: getString(value.abbreviation),
+    alias: getString(value.alias),
+    record: getString(value.record),
+    logo: getString(value.logo),
+    color: isValidHexColor(value.color) ? value.color : undefined,
+    league: getString(value.league),
+  };
+}
+
 function rowToGame(row: EligibleGameRow) {
   return {
     id: row.id,
@@ -37,8 +80,8 @@ function rowToGame(row: EligibleGameRow) {
     isLive: Boolean(row.is_live) || Date.parse(row.commence_time) <= Date.now(),
     away_team: row.away_team,
     home_team: row.home_team,
-    away_team_info: row.away_team_info ?? undefined,
-    home_team_info: row.home_team_info ?? undefined,
+    away_team_info: normalizeTeamInfo(row.away_team_info, row.away_team),
+    home_team_info: normalizeTeamInfo(row.home_team_info, row.home_team),
     bookmakers: Array.isArray(row.bookmakers) ? row.bookmakers : [],
     polymarket: row.polymarket ?? undefined,
     outcome_token_ids: row.outcome_token_ids ?? undefined,

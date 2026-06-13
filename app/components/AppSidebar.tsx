@@ -4,12 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { GoHomeFill } from "react-icons/go";
+import { MdAccountBalanceWallet } from "react-icons/md";
+import { IoStatsChart } from "react-icons/io5";
+import { SiCashapp } from "react-icons/si";
 
 const NAV_LINKS = [
-  { label: "Dash", href: "/" },
-  { label: "Accounts", href: "/accounts" },
-  { label: "Portfolio", href: "/portfolio" },
-  { label: "Payouts", href: "/payouts" },
+  { label: "Dash", href: "/", Icon: GoHomeFill },
+  { label: "Accounts", href: "/accounts", Icon: MdAccountBalanceWallet },
+  { label: "Portfolio", href: "/portfolio", Icon: IoStatsChart },
+  { label: "Payouts", href: "/payouts", Icon: SiCashapp },
 ] as const;
 
 function isActivePath(pathname: string, href: string) {
@@ -88,17 +92,20 @@ export default function AppSidebar() {
           <div className="relative z-10 grid h-full grid-cols-4">
             {NAV_LINKS.map((item) => {
               const isActive = isActivePath(pathname, item.href);
+              const Icon = item.Icon;
 
               return (
                 <Link
                   key={item.label}
                   href={item.href}
                   className={[
-                    "flex h-full items-center justify-center px-1 outline-none transition-colors",
+                    "flex h-full flex-col items-center justify-center gap-1 px-1 outline-none transition-colors",
                     "focus:outline-none focus-visible:outline-none",
                     isActive ? "text-zinc-100" : "text-zinc-500",
                   ].join(" ")}
                 >
+                  <Icon className="h-[24px] w-[24px] shrink-0" />
+
                   <span className="text-[12px] font-medium leading-none">
                     {item.label}
                   </span>
