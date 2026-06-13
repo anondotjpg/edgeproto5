@@ -463,7 +463,7 @@ function RuleRoomCard({
           </div>
 
           <div className="mt-1 truncate text-[11px] leading-tight text-zinc-500 sm:text-[13px]">
-            {breached ? "limit breached" : "amount before fail"}
+            {breached ? "limit breached" : "before fail"}
           </div>
         </div>
       </div>
