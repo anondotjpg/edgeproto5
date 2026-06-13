@@ -1,19 +1,32 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export async function GET(req: Request, context: RouteContext) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     const url = new URL(req.url);
     const privyUserId = url.searchParams.get("privyUserId");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing invoice ID." },
+        { status: 400 },
+      );
+    }
 
     if (!privyUserId) {
       return NextResponse.json(
         { error: "Missing Privy user ID." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,30 +58,50 @@ export async function GET(
         expires_at,
         tx_hash,
         confirmations,
-        credited_account_id
-      `
+        credited_account_id,
+        updated_at
+      `,
       )
       .eq("id", id)
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
-    if (invoiceError || !invoice) {
+    if (invoiceError) {
+      throw invoiceError;
+    }
+
+    if (!invoice) {
       return NextResponse.json(
         { error: "Invoice not found." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    return NextResponse.json({
-      ok: true,
-      invoice,
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        invoice,
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "no-store, no-cache, must-revalidate, proxy-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+    );
   } catch (error) {
-    console.error("Read crypto deposit invoice error:", error);
+    console.error("Get crypto deposit invoice error:", error);
 
     return NextResponse.json(
-      { error: "Unable to read deposit invoice." },
-      { status: 500 }
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to load deposit invoice.",
+      },
+      { status: 500 },
     );
   }
 }

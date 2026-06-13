@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import type { PlanKey } from "@/lib/plans";
@@ -126,7 +126,7 @@ function InfoCard({
 }: {
   label: string;
   value: string;
-  action?: React.ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <div className="rounded-2xl border border-zinc-900 bg-black/30 p-4">
@@ -148,7 +148,7 @@ function OffsetButton({
   disabled,
   className = "",
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
@@ -175,7 +175,7 @@ function SecondaryButton({
   onClick,
   disabled,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
 }) {
@@ -351,17 +351,37 @@ export default function ChallengeCta({
     if (!open || !invoice?.id || !privyUserId) return;
     if (invoice.status === "paid" || invoice.status === "expired") return;
 
+    let cancelled = false;
+
     const pollInvoice = async () => {
       try {
         const response = await fetch(
           `/api/crypto-deposits/${invoice.id}?privyUserId=${encodeURIComponent(
             privyUserId,
-          )}`,
+          )}&t=${Date.now()}`,
+          {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+            },
+          },
         );
 
         const data = await readJsonResponse(response);
 
-        if (!response.ok || !data?.invoice) return;
+        if (!response.ok) {
+          console.log("[deposit-modal] poll failed", data);
+          return;
+        }
+
+        if (!data?.invoice || cancelled) return;
+
+        console.log("[deposit-modal] invoice update", {
+          id: data.invoice.id,
+          status: data.invoice.status,
+          creditedAccountId: data.invoice.credited_account_id,
+          confirmations: data.invoice.confirmations,
+        });
 
         setInvoice(data.invoice);
 
@@ -371,16 +391,19 @@ export default function ChallengeCta({
         ) {
           router.refresh();
         }
-      } catch {
-        // Keep polling silently.
+      } catch (error) {
+        console.log("[deposit-modal] poll error", error);
       }
     };
 
     pollInvoice();
 
-    const interval = window.setInterval(pollInvoice, 5000);
+    const interval = window.setInterval(pollInvoice, 3000);
 
-    return () => window.clearInterval(interval);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
   }, [open, invoice?.id, invoice?.status, privyUserId, router]);
 
   return (
